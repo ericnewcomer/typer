@@ -1,8 +1,8 @@
 import './TypeBox.css';
 
 import * as React from 'react';
-import { Result } from 'src/App';
 import { isInsideGram } from 'src/helpers';
+import { Result } from 'src/interfaces';
 import { Word } from 'src/Words';
 
 enum CharState {

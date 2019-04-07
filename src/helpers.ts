@@ -1,5 +1,6 @@
-import { NGramRecord, Result, Scores } from 'src/App';
-import Words, { ScoreSort, Word } from 'src/Words';
+import { Scores } from 'src/App';
+import { NGramRecord, Result } from 'src/interfaces';
+import { ScoreSort, Word } from 'src/Words';
 
 const ROLLING_AVERAGE = 100;
 
