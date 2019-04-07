@@ -2,7 +2,7 @@ import './App.css';
 
 import * as React from 'react';
 import { TypeBox } from 'src/ components/typebox/TypeBox';
-import { IDLE_THRESHOLD, SCORE_LIFESPAN } from 'src/config';
+import { HISTORY_SPREAD, IDLE_THRESHOLD, SCORE_LIFESPAN } from 'src/config';
 import { addResult, calculateScore, calculateScoreSort, recalculateScores, wordsToString } from 'src/helpers';
 import Words, { ScoreSort, Word } from 'src/Words';
 
@@ -75,11 +75,13 @@ class App extends React.Component<{}, AppState> {
         />
 
         <div className="lesson">
-          {(this.state.scoreSort || []).slice(0, 5).map((score: ScoreSort) => (
-            <div className="lessongram" key={score.gram}>
-              {score.gram}
-            </div>
-          ))}
+          {(this.state.scoreSort || [])
+            .slice(0, HISTORY_SPREAD)
+            .map((score: ScoreSort) => (
+              <div className="lessongram" key={score.gram}>
+                {score.gram}
+              </div>
+            ))}
         </div>
       </div>
     );
@@ -97,13 +99,13 @@ class App extends React.Component<{}, AppState> {
     // tslint:disable-next-line: no-console
     console.log(Object.keys(scores).length + " records");
 
-    const nextSprint = this.words.getNextSprint(this.state.scoreSort);
-
     const sprints = this.state.sprints + 1;
     let scoreSort: ScoreSort[] = this.state.scoreSort || [];
     if (sprints % SCORE_LIFESPAN === 0) {
       scoreSort = calculateScoreSort(scores);
     }
+
+    const nextSprint = this.words.getNextSprint(scoreSort);
 
     this.setState(
       {

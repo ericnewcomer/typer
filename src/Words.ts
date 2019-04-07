@@ -1,4 +1,5 @@
 import { HIGH_FREQ_BIAS, HIGH_FREQ_CUTTOFF, HISTORY_BIAS, HISTORY_SPREAD } from 'src/config';
+import { wordsLength } from 'src/helpers';
 
 interface Frequencies {
   map: { [gram: string]: number };
@@ -133,7 +134,7 @@ export default class Words {
     }
 
     const words: Word[] = [];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 10; i++) {
       let gram: string = "";
       if (scores && scores.length > 0 && Math.random() < HISTORY_BIAS) {
         gram =
@@ -142,14 +143,16 @@ export default class Words {
           ].gram;
       }
 
-      words.push(getNextWord(this.words, gram));
+      if (wordsLength(words) < 30) {
+        words.push(getNextWord(this.words, gram));
+      }
     }
 
     // tslint:disable-next-line: no-console
-    console.log(scores);
+    // console.log(scores);
 
     // tslint:disable-next-line: no-console
-    console.log(words);
+    // console.log(words);
     return words;
   }
 }
