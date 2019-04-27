@@ -1,10 +1,30 @@
-import { HIGH_FREQ_BIAS, HIGH_FREQ_CUTTOFF, HISTORY_BIAS, HISTORY_SPREAD } from 'src/config';
-import { wordsLength } from 'src/helpers';
+import { ScoreSort } from 'components/sandbox/helpers';
+import { HIGH_FREQ_BIAS, HIGH_FREQ_CUTTOFF, HISTORY_BIAS, HISTORY_SPREAD } from 'config';
+import { getRandomItem, getWordsForNGram, wordsLength } from 'helpers';
+import { Nullable, Word } from 'interfaces';
 
 interface Frequencies {
   map: { [gram: string]: number };
   ngrams: string[];
 }
+
+const readInWords = (): Promise<Word[]> => {
+  return fetch("./words/words.csv")
+    .then(r => r.text())
+    .then(lines => {
+      const words = [];
+      for (const line of lines.split("\n")) {
+        const [rank, text, pos, dispersion] = line.split(",");
+        words.push({
+          rank: parseInt(rank, 10),
+          text,
+          pos,
+          dispersion: parseFloat(dispersion)
+        });
+      }
+      return words;
+    });
+};
 
 const readInFrequencies = (
   filename: string,
@@ -28,31 +48,16 @@ const readInFrequencies = (
 
           frequencies.map[lowered] = gramFreq / topFrequency;
           frequencies.ngrams.push(lowered);
-
-          // tslint:disable-next-line: no-console
-          // console.log("x ", line);
         }
       }
       return frequencies;
     });
 };
 
-export interface Word {
-  text: string;
-  ranking?: number;
-  ngram?: string;
-}
-
-const getWords = (text: string): Word[] => {
-  return text.split(" ").map((word: string) => {
-    return { text: word };
-  });
-};
-
-const getNextWord = (words: Frequencies, ngram?: string): Word => {
-  let wordList = words.ngrams;
+const getNextWord = (words: Word[], ngram?: string): Nullable<Word> => {
+  let wordList = words;
   if (ngram) {
-    wordList = words.ngrams.filter((word: string) => word.indexOf(ngram) > -1);
+    wordList = words.filter((word: Word) => word.text.indexOf(ngram) > -1);
   }
 
   let length = wordList.length;
@@ -61,27 +66,20 @@ const getNextWord = (words: Frequencies, ngram?: string): Word => {
   }
 
   const idx = Math.floor(Math.random() * length);
-  const text = wordList[idx];
-  return {
-    text,
-    ranking: idx,
-    ngram
-  };
+  if (idx >= wordList.length) {
+    return null;
+  }
+  return { ...wordList[idx], ngram };
 };
 
-export interface ScoreSort {
-  gram: string;
-  score: number;
-}
-
 export default class Words {
-  private unigrams: Frequencies;
-  private bigrams: Frequencies;
-  private trigrams: Frequencies;
-  private quadrigrams: Frequencies;
-  private words: Frequencies;
+  private unigrams!: Frequencies;
+  private bigrams!: Frequencies;
+  private trigrams!: Frequencies;
+  private quadrigrams!: Frequencies;
+  private words!: Word[];
 
-  constructor() {
+  constructor(callback: () => void) {
     const promises = [];
 
     promises.push(
@@ -109,10 +107,24 @@ export default class Words {
     );
 
     promises.push(
-      readInFrequencies("./words/words_10k.txt", 3).then(freqs => {
-        this.words = freqs;
+      readInWords().then(words => {
+        this.words = words;
       })
     );
+
+    Promise.all(promises).then(callback);
+  }
+
+  public getBigrams() {
+    return this.bigrams;
+  }
+
+  public getTrigrams() {
+    return this.trigrams;
+  }
+
+  public getQuadrigrams() {
+    return this.quadrigrams;
   }
 
   public getNGramFrequency(ngram: string): number {
@@ -128,11 +140,58 @@ export default class Words {
     return 0;
   }
 
-  public getNextSprint(scores?: ScoreSort[]): Word[] {
-    if (!this.words) {
-      return getWords("welcome, type this to get started");
+  public getWordsForNGrams(
+    ngrams: string[],
+    maxLength: number,
+    startPct: number
+  ): Word[] {
+    let wordList = this.words;
+
+    const words: Word[] = [];
+
+    let attempts = 0;
+
+    while (true && ngrams.length > 0 && attempts < 100) {
+      const remaining = maxLength - wordsLength(words);
+      const ngram = getRandomItem(ngrams) as string;
+
+      // get a filtered list by that gram
+      let compAttempts = 0;
+      let ngramComp = startPct;
+      while (compAttempts < 10) {
+        wordList = getWordsForNGram(
+          wordList,
+          words,
+          ngram,
+          ngramComp,
+          remaining
+        );
+        // no words left that fit for our ngram, give up
+        if (wordList.length === 0) {
+          ngramComp -= 0.05;
+          compAttempts++;
+        } else {
+          break;
+        }
+      }
+
+      // remove us from te list
+      if (wordList.length === 0) {
+        ngrams = ngrams.filter((g: string) => g !== ngram);
+        continue;
+      }
+
+      const newWord = { ...getRandomItem(wordList) };
+      newWord.text = newWord.text.toLowerCase();
+
+      words.push({ ...newWord, ngram });
+      attempts++;
     }
 
+    return words;
+  }
+
+  public getNextSprint(scores?: ScoreSort[]): Word[] {
     const words: Word[] = [];
     for (let i = 0; i < 10; i++) {
       let gram: string = "";
@@ -144,15 +203,12 @@ export default class Words {
       }
 
       if (wordsLength(words) < 30) {
-        words.push(getNextWord(this.words, gram));
+        const nextWord = getNextWord(this.words, gram);
+        if (nextWord !== null) {
+          words.push(nextWord);
+        }
       }
     }
-
-    // tslint:disable-next-line: no-console
-    // console.log(scores);
-
-    // tslint:disable-next-line: no-console
-    // console.log(words);
     return words;
   }
 }

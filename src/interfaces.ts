@@ -1,3 +1,9 @@
+export type Nullable<T> = T | null;
+
+export interface Scores {
+  [gram: string]: NGramRecord;
+}
+
 export interface NGramRecord {
   gramType: NGramType;
   gram: string;
@@ -21,4 +27,12 @@ export interface Result {
   gram: string;
   time: number;
   correct: boolean;
+}
+
+export interface Word {
+  rank: number;
+  text: string;
+  pos: string;
+  dispersion: number;
+  ngram?: string;
 }

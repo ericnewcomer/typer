@@ -1,25 +1,42 @@
-import './App.css';
+import './App.scss';
 
+import Level from 'components/level/Level';
+import Sandbox from 'components/sandbox/Sandbox';
 import * as React from 'react';
-import Sandbox from 'src/components/sandbox/Sandbox';
-import { NGramRecord } from 'src/interfaces';
-import Words from 'src/Words';
+import Words from 'Words';
 
-export interface Scores {
-  [gram: string]: NGramRecord;
+interface AppState {
+  loaded: boolean;
+  lessons: boolean;
 }
 
-class App extends React.Component {
+class App extends React.Component<{}, AppState> {
   private words: Words;
   constructor(props: any) {
     super(props);
-    this.words = new Words();
+
+    this.state = {
+      lessons: false,
+      loaded: false
+    };
+
+    this.words = new Words(() => {
+      this.setState({ loaded: true });
+    });
   }
 
   public render() {
+    if (!this.state.loaded) {
+      return <div />;
+    }
+
     return (
       <div className="App">
-        <Sandbox words={this.words} />
+        {this.state.lessons ? (
+          <Level words={this.words} />
+        ) : (
+          <Sandbox words={this.words} />
+        )}
       </div>
     );
   }

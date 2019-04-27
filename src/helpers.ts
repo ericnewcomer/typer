@@ -1,10 +1,49 @@
-import { Scores } from 'src/App';
-import { NGramRecord, Result } from 'src/interfaces';
-import { ScoreSort, Word } from 'src/Words';
+import { NGramRecord, Result, Scores, Word } from 'interfaces';
 
-const ROLLING_AVERAGE = 100;
+const ROLLING_AVERAGE = 20;
 
-export const addResult = (record: NGramRecord, result: Result) => {
+export const getRandomItem = (list: any[]): any => {
+  const idx = Math.floor(Math.random() * list.length);
+  const rand = list[idx];
+  // tslint:disable-next-line: no-console
+  // console.log("Random item from ", list, idx, rand);
+
+  return rand;
+};
+
+export const addResultToScores = (
+  scores: Scores,
+  result: Result
+): NGramRecord => {
+  let record: NGramRecord = scores[result.gram];
+
+  // tslint:disable-next-line: no-console
+  // console.log(result.gram, frequency);
+
+  if (!record) {
+    const accuracy = result.correct ? 1 : 0;
+    const speed = result.time;
+
+    record = {
+      gramType: result.type,
+      gram: result.gram,
+      times: [result.time],
+      correct: [result.correct],
+      accuracy,
+      speed,
+      score: 0
+    };
+    calculateScore(record);
+
+    scores[record.gram] = record;
+  } else {
+    addResult(record, result);
+  }
+
+  return record;
+};
+
+const addResult = (record: NGramRecord, result: Result) => {
   record.times.push(result.time);
   record.correct.push(result.correct);
 
@@ -22,6 +61,10 @@ export const addResult = (record: NGramRecord, result: Result) => {
   const totalCorrect = record.correct.filter((a: boolean) => a).length;
   record.accuracy = totalCorrect / record.correct.length;
   calculateScore(record);
+};
+
+export const getWPM = (result: NGramRecord) => {
+  return Math.floor(((result.gram.length / result.speed) * 1000 * 60) / 5);
 };
 
 export const recalculateScores = (scores: Scores) => {
@@ -80,27 +123,24 @@ export const isInsideGram = (words: Word[], index: number) => {
   return false;
 };
 
-export const calculateScoreSort = (scores: Scores): ScoreSort[] => {
-  // tslint:disable-next-line: no-console
-  let sortedScores: ScoreSort[] = [];
-  // if we have some scores, let's look for problems
-  if (scores) {
-    sortedScores = Object.keys(scores)
-      .map((key: string) => {
-        const gramScore = scores[key];
-        return { gram: gramScore.gram, score: gramScore.score };
-      })
-      .sort((a: ScoreSort, b: ScoreSort) => {
-        if (a.gram.length < 2) {
-          return 1;
-        } else if (b.gram.length < 2) {
-          return -1;
-        } else {
-          return b.score - a.score;
-        }
-      })
-      .slice(0, 100);
-  }
+export const hasWord = (words: Word[], word: Word) =>
+  !!words.find((w: Word) => isWordMatch(word, w));
 
-  return sortedScores;
+const isWordMatch = (a: Word, b: Word) => a.text === b.text;
+
+export const getWordsForNGram = (
+  words: Word[],
+  candidates: Word[],
+  ngram: string,
+  pctOfWord: number,
+  charsNeeded: number
+): Word[] => {
+  return words.filter((w: Word) => {
+    return (
+      w.text.indexOf(ngram) > -1 &&
+      w.text.length <= charsNeeded &&
+      !hasWord(candidates, w) &&
+      ngram.length / w.text.length >= pctOfWord
+    );
+  });
 };

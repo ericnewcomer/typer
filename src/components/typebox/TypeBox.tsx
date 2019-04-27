@@ -1,9 +1,8 @@
-import './TypeBox.css';
+import './TypeBox.scss';
 
+import { isInsideGram } from 'helpers';
+import { Result, Word } from 'interfaces';
 import * as React from 'react';
-import { isInsideGram } from 'src/helpers';
-import { Result } from 'src/interfaces';
-import { Word } from 'src/Words';
 
 enum CharState {
   untyped = "untyped",
@@ -13,8 +12,14 @@ enum CharState {
 
 interface TypeBoxProps {
   sprint: string;
-  words?: Word[];
+
   onComplete: (results: Result[], wpm: number) => void;
+
+  // used for optional ngram highlighting
+  words?: Word[];
+
+  // let our parent handle key presses
+  onKeyPressed?: (key: string) => boolean;
 }
 
 interface TypeBoxState {
@@ -26,7 +31,7 @@ interface TypeBoxState {
 }
 
 export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
-  private ele: HTMLDivElement;
+  private ele!: HTMLDivElement;
 
   constructor(props: TypeBoxProps) {
     super(props);
@@ -98,7 +103,7 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
 
   private getEmptySprintState(): CharState[] {
     const sprintState: CharState[] = [];
-    for (const _ of this.props.sprint) {
+    for (let i = 0; i < this.props.sprint.length; i++) {
       sprintState.push(CharState.untyped);
     }
     return sprintState;
@@ -115,7 +120,7 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
   }
 
   private onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) =>
-    this.handleKeyDown(event.key, event.keyCode);
+    this.handleKeyDown(event.key, event.which + event.keyCode);
 
   private computeGrams(gramSize: number): Result[] {
     const results: Result[] = [];
@@ -175,6 +180,12 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
   }
 
   private handleKeyDown(key: string, keyCode: number) {
+    if (this.props.onKeyPressed) {
+      if (this.props.onKeyPressed(key)) {
+        return;
+      }
+    }
+
     if (key.length > 1) {
       return;
     }
@@ -228,12 +239,12 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
       const took = now - this.state.lastKeyPress;
       timings.push(took);
 
+      const sprintState = { ...this.state.sprintState };
+
       if (
-        this.state.sprintState[this.state.sprintState.length - 1] ===
-        CharState.untyped
+        sprintState[this.state.sprintState.length - 1] === CharState.untyped
       ) {
-        this.state.sprintState[this.state.sprintState.length - 1] =
-          CharState.correct;
+        sprintState[this.state.sprintState.length - 1] = CharState.correct;
       }
       this.props.onComplete(this.computeResults(), this.getWPM());
       this.reset();
