@@ -1,0 +1,39 @@
+.level {
+  font-family: "Roboto Slab";
+  font-size: 100px;
+  font-weight: 100;
+  position: absolute;
+  padding: 5px 30px;
+  background: #555;
+  color: #999;
+  left: 0;
+  bottom: 0;
+}
+
+.typebox {
+  text-align: center;
+  margin-top: 220px;
+}
+
+.wpm {
+  font-family: "Roboto Slab";
+  font-size: 100px;
+  font-weight: 100;
+  color: #555;
+  margin-top: 50px;
+  height: 130px;
+}
+
+.level_item {
+  font-family: "Roboto Slab";
+  padding: 3px 25px;
+  margin: 20px;
+  background: #555;
+
+  display: inline-block;
+  font-size: 38px;
+  font-weight: 100;
+  .ngram {
+    color: #999;
+  }
+}

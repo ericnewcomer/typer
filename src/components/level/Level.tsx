@@ -1,5 +1,3 @@
-import './Level.scss';
-
 import { getNGramsForLevel, getPercentComplete } from 'components/level/helpers';
 import { TypeBox } from 'components/typebox/TypeBox';
 import { IDLE_THRESHOLD, MAX_SPRINT_LENGTH, NGRAM_COMPONENT, TARGET_ACCURACY, TARGET_WPM } from 'config';
@@ -7,6 +5,8 @@ import { addResultToScores, wordsToString } from 'helpers';
 import { Result, Scores, Word } from 'interfaces';
 import * as React from 'react';
 import Words from 'Words';
+
+import styles from './Level.module.scss';
 
 interface LevelProps {
   words: Words;
@@ -50,30 +50,34 @@ export default class Level extends React.Component<LevelProps, LevelState> {
   public render(): JSX.Element {
     return (
       <div>
-        <div className="level">{this.state.currentLevel + 1}</div>
-        <TypeBox
-          sprint={this.state.currentSprint}
-          words={this.state.currentWords}
-          onComplete={this.handleSprintComplete}
-          onKeyPressed={this.handleKeyPressed}
-        />
+        <div className={styles.level}>{this.state.currentLevel + 1}</div>
+        <div className={styles.typebox}>
+          <TypeBox
+            sprint={this.state.currentSprint}
+            words={this.state.currentWords}
+            onComplete={this.handleSprintComplete}
+            onKeyPressed={this.handleKeyPressed}
+          />
+        </div>
 
-        {this.state.ngrams.map((ngram: string) => {
-          const result = this.state.scores[ngram];
+        {false
+          ? this.state.ngrams.map((ngram: string) => {
+              const result = this.state.scores[ngram];
 
-          const stats = result ? (
-            <div className="stats">
-              {getPercentComplete(TARGET_WPM, TARGET_ACCURACY, result)}
-            </div>
-          ) : null;
+              const stats = result ? (
+                <div className={styles.stats}>
+                  {getPercentComplete(TARGET_WPM, TARGET_ACCURACY, result)}
+                </div>
+              ) : null;
 
-          return (
-            <div key={ngram} className="level-item">
-              <div className="ngram">{ngram}</div>
-              {stats}
-            </div>
-          );
-        })}
+              return (
+                <div key={ngram} className={styles.level_item}>
+                  <div className={styles.ngram}>{ngram}</div>
+                  {stats}
+                </div>
+              );
+            })
+          : null}
       </div>
     );
   }

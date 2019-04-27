@@ -1,0 +1,25 @@
+.wpm {
+  font-family: "Roboto Slab";
+  font-size: 100px;
+  font-weight: 100;
+  color: #555;
+  margin-top: 50px;
+  height: 130px;
+  text-align: center;
+}
+
+.current_grams {
+  text-align: center;
+  .gram {
+    color: orange;
+    font-weight: 200;
+    display: inline-block;
+    font-size: 22px;
+    padding: 10px;
+    font-family: "Roboto Slab";
+  }
+}
+
+.typebox {
+  text-align: center;
+}

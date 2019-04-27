@@ -1,5 +1,3 @@
-import './Sandbox.scss';
-
 import { calculateScoreSort, ScoreSort } from 'components/sandbox/helpers';
 import { TypeBox } from 'components/typebox/TypeBox';
 import { HISTORY_SPREAD, IDLE_THRESHOLD, SCORE_LIFESPAN } from 'config';
@@ -7,6 +5,8 @@ import { addResultToScores, recalculateScores, wordsToString } from 'helpers';
 import { Result, Scores, Word } from 'interfaces';
 import * as React from 'react';
 import Words from 'Words';
+
+import styles from './Sandbox.module.scss';
 
 interface SandboxProps {
   words: Words;
@@ -44,18 +44,22 @@ export default class Sandbox extends React.Component<
   public render(): JSX.Element {
     return (
       <div>
-        <div className="wpm">{this.state.wpm > 0 ? this.state.wpm : ""}</div>
-        <TypeBox
-          sprint={this.state.currentSprint}
-          words={this.state.currentWords}
-          onComplete={this.handleSprintResults}
-        />
+        <div className={styles.wpm}>
+          {this.state.wpm > 0 ? this.state.wpm : ""}
+        </div>
+        <div className={styles.typebox}>
+          <TypeBox
+            sprint={this.state.currentSprint}
+            words={this.state.currentWords}
+            onComplete={this.handleSprintResults}
+          />
+        </div>
 
-        <div className="lesson">
+        <div className={styles.current_grams}>
           {(this.state.scoreSort || [])
             .slice(0, HISTORY_SPREAD)
             .map((score: ScoreSort) => (
-              <div className="lessongram" key={score.gram}>
+              <div className={styles.gram} key={score.gram}>
                 {score.gram}
               </div>
             ))}
