@@ -1,4 +1,3 @@
-import { ROLLING_AVERAGE } from 'config';
 import { NGramRecord, Result, Scores, Word } from 'interfaces';
 
 export const getRandomItem = (list: any[]): any => {
@@ -12,7 +11,8 @@ export const getRandomItem = (list: any[]): any => {
 
 export const addResultToScores = (
   scores: Scores,
-  result: Result
+  result: Result,
+  rollingAvg: number
 ): NGramRecord => {
   let record: NGramRecord = scores[result.gram];
 
@@ -36,13 +36,13 @@ export const addResultToScores = (
 
     scores[record.gram] = record;
   } else {
-    addResult(record, result);
+    addResult(record, result, rollingAvg);
   }
 
   return record;
 };
 
-const addResult = (record: NGramRecord, result: Result) => {
+const addResult = (record: NGramRecord, result: Result, rollingAvg: number) => {
   record.speed =
     (record.speed * record.times.length + result.time) /
     (record.times.length + 1);
@@ -55,7 +55,7 @@ const addResult = (record: NGramRecord, result: Result) => {
   record.correct.push(result.correct);
 
   // trim off our history to stay within our rolling average
-  const excess = record.times.length - ROLLING_AVERAGE;
+  const excess = record.times.length - rollingAvg;
   if (excess > 0) {
     record.times = record.times.slice(excess);
     record.correct = record.correct.slice(excess);

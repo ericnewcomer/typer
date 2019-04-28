@@ -1,7 +1,7 @@
 import Digits from 'components/digits/Digits';
 import { getNGramsForLevel, getPercentComplete, getSeverityColor } from 'components/level/helpers';
 import { TypeBox } from 'components/typebox/TypeBox';
-import { IDLE_THRESHOLD, MAX_SPRINT_LENGTH, NGRAM_COMPONENT, TARGET_ACCURACY, TARGET_WPM } from 'config';
+import { Config, MAX_SPRINT_LENGTH } from 'config';
 import { addResultToScores, getWPM, wordsToString } from 'helpers';
 import { Result, Scores, Word } from 'interfaces';
 import * as React from 'react';
@@ -10,6 +10,7 @@ import Words from 'Words';
 import styles from './Level.module.scss';
 
 interface LevelProps {
+  config: Config;
   words: Words;
   scores: Scores;
   onScoresUpdated: (scores: Scores) => void;
@@ -35,8 +36,8 @@ export default class Level extends React.Component<LevelProps, LevelState> {
     const ngrams = getNGramsForLevel(this.props.words, currentLevel);
     const currentWords = this.props.words.getWordsForNGrams(
       ngrams,
-      20,
-      NGRAM_COMPONENT
+      Math.min(this.props.config.sprintLength, MAX_SPRINT_LENGTH),
+      this.props.config.ngramComponent
     );
 
     this.state = {
@@ -75,7 +76,11 @@ export default class Level extends React.Component<LevelProps, LevelState> {
             const result = this.props.scores[ngram];
 
             const pct = result
-              ? getPercentComplete(TARGET_WPM, TARGET_ACCURACY, result)
+              ? getPercentComplete(
+                  this.props.config.targetWPM,
+                  this.props.config.targetAccuracy,
+                  result
+                )
               : 0;
 
             return (
@@ -154,7 +159,11 @@ export default class Level extends React.Component<LevelProps, LevelState> {
     this.state.ngrams.forEach((ngram: string) => {
       const result = scores[ngram];
       if (result) {
-        const pct = getPercentComplete(TARGET_WPM, TARGET_ACCURACY, result);
+        const pct = getPercentComplete(
+          this.props.config.targetWPM,
+          this.props.config.targetAccuracy,
+          result
+        );
         if (pct < 100) {
           incomplete++;
         }
@@ -163,8 +172,8 @@ export default class Level extends React.Component<LevelProps, LevelState> {
 
     results.forEach((result: Result) => {
       // ignore excessive times
-      if (result.time < IDLE_THRESHOLD) {
-        addResultToScores(scores, result);
+      if (result.time < this.props.config.idleThreshold) {
+        addResultToScores(scores, result, this.props.config.rollingAverage);
       }
     });
 
@@ -213,17 +222,28 @@ export default class Level extends React.Component<LevelProps, LevelState> {
   private updateNextSprint(): void {
     const decilesCompleted = this.state.currentLevel / 10;
 
-    const sprintLength = 20 + decilesCompleted;
+    let sprintLength = Math.max(
+      20 + decilesCompleted,
+      this.props.config.sprintLength
+    );
     // we let our sprints get longer as we go along
-    const length = Math.min(sprintLength, MAX_SPRINT_LENGTH);
+    sprintLength = Math.min(sprintLength, MAX_SPRINT_LENGTH);
 
     // the ngrams can also be a smaller percentage of the word
-    const ngramComp = Math.max(0.2, NGRAM_COMPONENT - decilesCompleted * 0.05);
+    const ngramComp = Math.max(
+      0.2,
+      this.props.config.ngramComponent - decilesCompleted * 0.05
+    );
 
     let incompleteGrams = this.state.ngrams.filter((ngram: string) => {
       const result = this.props.scores[ngram];
       return (
-        result && getPercentComplete(TARGET_WPM, TARGET_ACCURACY, result) < 100
+        result &&
+        getPercentComplete(
+          this.props.config.targetWPM,
+          this.props.config.targetAccuracy,
+          result
+        ) < 100
       );
     });
 
@@ -238,7 +258,7 @@ export default class Level extends React.Component<LevelProps, LevelState> {
 
     const currentWords = this.props.words.getWordsForNGrams(
       incompleteGrams,
-      length,
+      sprintLength,
       ngramComp
     );
 

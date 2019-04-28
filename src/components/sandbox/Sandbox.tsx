@@ -1,7 +1,7 @@
 import Digits from 'components/digits/Digits';
 import { calculateScoreSort, ScoreSort } from 'components/sandbox/helpers';
 import { TypeBox } from 'components/typebox/TypeBox';
-import { HISTORY_SPREAD, IDLE_THRESHOLD, SCORE_LIFESPAN } from 'config';
+import { Config, HISTORY_SPREAD, SCORE_LIFESPAN } from 'config';
 import { addResultToScores, wordsToString } from 'helpers';
 import { Result, Scores, Word } from 'interfaces';
 import * as React from 'react';
@@ -10,6 +10,7 @@ import Words from 'Words';
 import styles from './Sandbox.module.scss';
 
 interface SandboxProps {
+  config: Config;
   words: Words;
   scores: Scores;
   onScoresUpdated: (scores: Scores) => void;
@@ -77,8 +78,8 @@ export default class Sandbox extends React.Component<
     const scores = { ...this.props.scores };
     results.forEach((result: Result) => {
       // ignore excessive times
-      if (result.time < IDLE_THRESHOLD) {
-        addResultToScores(scores, result);
+      if (result.time < this.props.config.idleThreshold) {
+        addResultToScores(scores, result, this.props.config.rollingAverage);
       }
     });
 
@@ -90,7 +91,10 @@ export default class Sandbox extends React.Component<
       scoreSort = calculateScoreSort(scores);
     }
 
-    const nextSprint = this.props.words.getNextSprint(scoreSort);
+    const nextSprint = this.props.words.getNextSprint(
+      this.props.config.highFrequencyBias,
+      scoreSort
+    );
 
     this.setState({
       sprints,

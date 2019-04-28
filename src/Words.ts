@@ -1,5 +1,5 @@
 import { ScoreSort } from 'components/sandbox/helpers';
-import { HIGH_FREQ_BIAS, HIGH_FREQ_CUTTOFF, HISTORY_BIAS, HISTORY_SPREAD } from 'config';
+import { HIGH_FREQ_CUTTOFF, HISTORY_BIAS, HISTORY_SPREAD } from 'config';
 import { getRandomItem, getWordsForNGram, wordsLength } from 'helpers';
 import { Nullable, Word } from 'interfaces';
 
@@ -54,14 +54,18 @@ const readInFrequencies = (
     });
 };
 
-const getNextWord = (words: Word[], ngram?: string): Nullable<Word> => {
+const getNextWord = (
+  words: Word[],
+  highFreqBias: number,
+  ngram?: string
+): Nullable<Word> => {
   let wordList = words;
   if (ngram) {
     wordList = words.filter((word: Word) => word.text.indexOf(ngram) > -1);
   }
 
   let length = wordList.length;
-  if (Math.random() < HIGH_FREQ_BIAS) {
+  if (Math.random() < highFreqBias) {
     length *= HIGH_FREQ_CUTTOFF;
   }
 
@@ -192,7 +196,7 @@ export default class Words {
     return selectedWords;
   }
 
-  public getNextSprint(scores?: ScoreSort[]): Word[] {
+  public getNextSprint(highFreqBias: number, scores?: ScoreSort[]): Word[] {
     const words: Word[] = [];
     for (let i = 0; i < 10; i++) {
       let gram: string = "";
@@ -204,7 +208,7 @@ export default class Words {
       }
 
       if (wordsLength(words) < 30) {
-        const nextWord = getNextWord(this.words, gram);
+        const nextWord = getNextWord(this.words, highFreqBias, gram);
         if (nextWord !== null) {
           words.push(nextWord);
         }

@@ -1,6 +1,8 @@
 import { react as bindCallbacks } from 'auto-bind';
+import ConfigPanel from 'components/configpanel/ConfigPanel';
 import Level from 'components/level/Level';
 import Sandbox from 'components/sandbox/Sandbox';
+import { Config, getDefaultConfig } from 'config';
 import { Scores } from 'interfaces';
 import * as React from 'react';
 import Words from 'Words';
@@ -11,6 +13,7 @@ interface AppState {
   loaded: boolean;
   lessons: boolean;
   scores: Scores;
+  config: Config;
 }
 
 class App extends React.Component<{}, AppState> {
@@ -18,11 +21,15 @@ class App extends React.Component<{}, AppState> {
   constructor(props: any) {
     super(props);
 
-    const scores = JSON.parse(localStorage.getItem("app") || "{}").scores || {};
+    const appState: Partial<AppState> = JSON.parse(
+      localStorage.getItem("app") || "{}"
+    );
+
     this.state = {
-      lessons: true,
+      lessons: !!appState.lessons,
       loaded: false,
-      scores
+      scores: appState.scores || {},
+      config: appState.config || getDefaultConfig()
     };
 
     this.words = new Words(() => {
@@ -34,13 +41,33 @@ class App extends React.Component<{}, AppState> {
     });
   }
 
+  private saveToBrowserStorage() {
+    // save our scores in the local storage
+    localStorage.setItem(
+      "app",
+      JSON.stringify({
+        scores: this.state.scores,
+        config: this.state.config,
+        lessons: this.state.lessons
+      })
+    );
+  }
+
   private handleUpdateScores(scores: Scores): void {
     this.setState({ scores }, () => {
-      // save our scores in the local storage
-      localStorage.setItem(
-        "app",
-        JSON.stringify({ scores: this.state.scores })
-      );
+      this.saveToBrowserStorage();
+    });
+  }
+
+  private handleConfigUpdated(config: Config): void {
+    this.setState({ config }, () => {
+      this.saveToBrowserStorage();
+    });
+  }
+
+  private handleLessonToggle(): void {
+    this.setState({ lessons: !this.state.lessons }, () => {
+      this.saveToBrowserStorage();
     });
   }
 
@@ -51,23 +78,26 @@ class App extends React.Component<{}, AppState> {
 
     return (
       <div className={styles.app}>
+        <ConfigPanel
+          config={this.state.config}
+          onConfigUpdated={this.handleConfigUpdated}
+        />
         {this.state.lessons ? (
           <Level
+            config={this.state.config}
             words={this.words}
             scores={this.state.scores}
             onScoresUpdated={this.handleUpdateScores}
           />
         ) : (
           <Sandbox
+            config={this.state.config}
             words={this.words}
             scores={this.state.scores}
             onScoresUpdated={this.handleUpdateScores}
           />
         )}
-        <div
-          className={styles.toggle}
-          onClick={() => this.setState({ lessons: !this.state.lessons })}
-        >
+        <div className={styles.toggle} onClick={this.handleLessonToggle}>
           {!this.state.lessons ? "📚" : "🤪"}
         </div>
       </div>
