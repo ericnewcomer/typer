@@ -34,6 +34,7 @@
 
 .incorrect {
   border-bottom: 1px solid red;
+  // color: rgba(255, 0, 0, 0.5);
 }
 
 .cursor.incorrect {
@@ -41,7 +42,7 @@
 }
 
 .correct {
-  color: #777;
+  color: #ccc;
 }
 
 .ngram {

@@ -1,18 +1,17 @@
 .level {
   font-family: "Roboto Slab";
-  font-size: 100px;
+  font-size: 30px;
   font-weight: 100;
   position: absolute;
-  padding: 5px 30px;
-  background: #555;
-  color: #999;
-  left: 0;
-  bottom: 0;
+  padding: 5px 10px;
+  background: #ccc;
+  color: #777;
+  left: 30px;
+  bottom: 30px;
 }
 
 .typebox {
   text-align: center;
-  margin-top: 220px;
 }
 
 .wpm {
@@ -22,6 +21,7 @@
   color: #555;
   margin-top: 50px;
   height: 130px;
+  text-align: center;
 }
 
 .level_item {

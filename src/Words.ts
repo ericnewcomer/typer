@@ -145,23 +145,24 @@ export default class Words {
     maxLength: number,
     startPct: number
   ): Word[] {
-    let wordList = this.words;
-
-    const words: Word[] = [];
+    const selectedWords: Word[] = [];
 
     let attempts = 0;
 
     while (true && ngrams.length > 0 && attempts < 100) {
-      const remaining = maxLength - wordsLength(words);
+      const remaining = maxLength - wordsLength(selectedWords);
       const ngram = getRandomItem(ngrams) as string;
+
+      let wordList: Word[] = [];
 
       // get a filtered list by that gram
       let compAttempts = 0;
       let ngramComp = startPct;
-      while (compAttempts < 10) {
+
+      while (compAttempts < 40) {
         wordList = getWordsForNGram(
-          wordList,
-          words,
+          this.words,
+          selectedWords,
           ngram,
           ngramComp,
           remaining
@@ -184,11 +185,11 @@ export default class Words {
       const newWord = { ...getRandomItem(wordList) };
       newWord.text = newWord.text.toLowerCase();
 
-      words.push({ ...newWord, ngram });
+      selectedWords.push({ ...newWord, ngram });
       attempts++;
     }
 
-    return words;
+    return selectedWords;
   }
 
   public getNextSprint(scores?: ScoreSort[]): Word[] {
@@ -209,6 +210,7 @@ export default class Words {
         }
       }
     }
+
     return words;
   }
 }

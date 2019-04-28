@@ -234,7 +234,7 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
       }
     }
 
-    if (cursor === 0 || cursor >= this.props.sprint.length) {
+    if (currentIndex >= this.props.sprint.length) {
       const now = new Date().getTime();
       const took = now - this.state.lastKeyPress;
       timings.push(took);
@@ -246,6 +246,7 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
       ) {
         sprintState[this.state.sprintState.length - 1] = CharState.correct;
       }
+
       this.props.onComplete(this.computeResults(), this.getWPM());
       this.reset();
     } else {

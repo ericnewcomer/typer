@@ -1,3 +1,4 @@
+import { TARGET_RECORDS } from 'config';
 import { getWPM } from 'helpers';
 import { NGramRecord } from 'interfaces';
 import Words from 'Words';
@@ -56,5 +57,7 @@ export const getPercentComplete = (
   const avgScore = (speedScore + accuracyScore) / 2;
 
   // need at least twenty records to finish
-  return avgScore - 20 + record.times.length;
+  return (
+    avgScore - TARGET_RECORDS + Math.min(TARGET_RECORDS, record.times.length)
+  );
 };
