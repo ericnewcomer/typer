@@ -247,8 +247,10 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
         sprintState[this.state.sprintState.length - 1] = CharState.correct;
       }
 
-      this.props.onComplete(this.computeResults(), this.getWPM());
-      this.reset();
+      this.setState({ sprintState }, () => {
+        this.props.onComplete(this.computeResults(), this.getWPM());
+        this.reset();
+      });
     } else {
       this.setState({
         cursor,

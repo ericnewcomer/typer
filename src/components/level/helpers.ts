@@ -61,3 +61,8 @@ export const getPercentComplete = (
     avgScore - TARGET_RECORDS + Math.min(TARGET_RECORDS, record.times.length)
   );
 };
+
+export const getSeverityColor = (pct: number) => {
+  var hue = (pct * 80).toString(10);
+  return ["hsl(", hue, ",100%,50%)"].join("");
+};

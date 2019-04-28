@@ -1,5 +1,5 @@
 import Digits from 'components/digits/Digits';
-import { getNGramsForLevel, getPercentComplete } from 'components/level/helpers';
+import { getNGramsForLevel, getPercentComplete, getSeverityColor } from 'components/level/helpers';
 import { TypeBox } from 'components/typebox/TypeBox';
 import { IDLE_THRESHOLD, MAX_SPRINT_LENGTH, NGRAM_COMPONENT, TARGET_ACCURACY, TARGET_WPM } from 'config';
 import { addResultToScores, getWPM, wordsToString } from 'helpers';
@@ -84,18 +84,35 @@ export default class Level extends React.Component<LevelProps, LevelState> {
                 className={
                   styles.level_item + " " + (pct === 100 ? styles.complete : "")
                 }
+                style={
+                  {
+                    // borderColor: getSeverityColor(
+                    //result ? result.accuracy + 0.05 : 1
+                    //)
+                  }
+                }
               >
                 <div
                   className={styles.progress_bar}
                   style={{
+                    // background: getSeverityColor(result ? result.accuracy : 0),
                     height: pct + "%"
                   }}
                 />
                 <div className={styles.ngram}>{ngram}</div>
                 {result ? (
                   <div className={styles.wpm_wrapper}>
-                    <div className={styles.ngram_wpm}>
-                      <Digits count={getWPM(result)} />
+                    <div
+                      className={styles.ngram_wpm}
+                      style={{
+                        color: "rgba(0,0,0,.2)",
+                        background:
+                          pct >= 100
+                            ? "#fff"
+                            : getSeverityColor(result ? result.accuracy : 0)
+                      }}
+                    >
+                      {pct >= 100 ? "⭐" : <Digits count={getWPM(result)} />}
                     </div>
                   </div>
                 ) : null}
@@ -131,6 +148,19 @@ export default class Level extends React.Component<LevelProps, LevelState> {
     this.setState({ wpm });
 
     const scores = { ...this.props.scores };
+
+    // check incomplete before update so we have one round after completion before moving on
+    let incomplete = 0;
+    this.state.ngrams.forEach((ngram: string) => {
+      const result = scores[ngram];
+      if (result) {
+        const pct = getPercentComplete(TARGET_WPM, TARGET_ACCURACY, result);
+        if (pct < 100) {
+          incomplete++;
+        }
+      }
+    });
+
     results.forEach((result: Result) => {
       // ignore excessive times
       if (result.time < IDLE_THRESHOLD) {
@@ -150,20 +180,10 @@ export default class Level extends React.Component<LevelProps, LevelState> {
     const lessonWPM = Math.floor(((chars / time) * 1000 * 60) / 5);
 
     let ngrams: string[] = [...this.state.ngrams];
-    let incomplete = 0;
-    this.state.ngrams.forEach((ngram: string) => {
-      const result = scores[ngram];
-      if (result) {
-        const pct = getPercentComplete(TARGET_WPM, TARGET_ACCURACY, result);
-        if (pct < 100) {
-          incomplete++;
-        }
-      }
-    });
 
     let currentLevel = this.state.currentLevel;
     if (incomplete === 0) {
-      this.setState({ lessonWPM });
+      // this.setState({ lessonWPM });
       this.handleLevelUp();
       return;
     }
@@ -177,7 +197,7 @@ export default class Level extends React.Component<LevelProps, LevelState> {
   private handleLevelUp(): void {
     const currentLevel = this.state.currentLevel + 1;
     localStorage.setItem("level", JSON.stringify({ currentLevel }));
-    this.setState({ currentLevel, ngrams: [] }, () => {
+    this.setState({ currentLevel, ngrams: [], lessonWPM: 0 }, () => {
       this.updateNextSprint();
     });
   }

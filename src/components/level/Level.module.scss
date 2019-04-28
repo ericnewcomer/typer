@@ -1,6 +1,7 @@
 // $progress: rgb(104, 184, 255);
-$progress: rgb(178, 178, 178);
-$complete: rgb(34, 158, 61);
+// $progress: rgb(197, 197, 197);
+$progress: rgb(252, 178, 66);
+$complete: rgb(75, 199, 102);
 
 .level {
   font-family: "Roboto Slab";
@@ -8,7 +9,7 @@ $complete: rgb(34, 158, 61);
   font-weight: 100;
   position: absolute;
   padding: 5px 10px;
-  background: #ccc;
+  // background: #ccc;
   color: #777;
   left: 10px;
   top: 10px;
@@ -51,15 +52,16 @@ $complete: rgb(34, 158, 61);
         .ngram_wpm {
           background: #fff;
           border-color: $complete;
-          color: $complete;
+          // color: $complete;
         }
       }
+
       .progress_bar {
         background: $complete;
       }
 
       .ngram {
-        text-shadow: 0px 0px 2px darken($complete, 5%);
+        text-shadow: 0px 0px 2px darken($complete, 35%);
       }
     }
 
@@ -73,13 +75,14 @@ $complete: rgb(34, 158, 61);
       .ngram_wpm {
         position: relative;
         color: #fff;
-        font-size: 12px;
+        font-size: 11px;
         text-align: center;
         font-weight: 700;
-        padding: 5px;
+        padding: 7px 0px;
         margin: 15px;
         border-radius: 50%;
-        border: 1px solid #fff;
+        transition: all 2s ease-in-out;
+        // border: 1px solid #fff;
       }
     }
 
@@ -89,6 +92,7 @@ $complete: rgb(34, 158, 61);
       position: absolute;
       bottom: 0;
       background: $progress;
+      transition: all 2s ease-in-out;
     }
 
     .ngram {

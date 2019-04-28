@@ -57,8 +57,8 @@ const addResult = (record: NGramRecord, result: Result) => {
   // trim off our history to stay within our rolling average
   const excess = record.times.length - ROLLING_AVERAGE;
   if (excess > 0) {
-    record.times = record.times.slice(ROLLING_AVERAGE);
-    record.correct = record.correct.slice(ROLLING_AVERAGE);
+    record.times = record.times.slice(excess);
+    record.correct = record.correct.slice(excess);
   }
 
   // compute our new average speed
