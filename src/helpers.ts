@@ -43,6 +43,14 @@ export const addResultToScores = (
 };
 
 const addResult = (record: NGramRecord, result: Result) => {
+  record.speed =
+    (record.speed * record.times.length + result.time) /
+    (record.times.length + 1);
+
+  record.accuracy =
+    (record.accuracy * record.correct.length + (result.correct ? 1 : 0)) /
+    (record.correct.length + 1);
+
   record.times.push(result.time);
   record.correct.push(result.correct);
 
@@ -54,11 +62,11 @@ const addResult = (record: NGramRecord, result: Result) => {
   }
 
   // compute our new average speed
-  const totalTime = record.times.reduce((a: number, b: number) => a + b);
-  record.speed = totalTime / record.times.length;
+  // const totalTime = record.times.reduce((a: number, b: number) => a + b);
+  // record.speed = totalTime / record.times.length;
+  // const totalCorrect = record.correct.filter((a: boolean) => a).length;
+  // record.accuracy = totalCorrect / record.correct.length;
 
-  const totalCorrect = record.correct.filter((a: boolean) => a).length;
-  record.accuracy = totalCorrect / record.correct.length;
   calculateScore(record);
 };
 
