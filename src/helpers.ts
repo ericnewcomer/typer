@@ -1,6 +1,5 @@
+import { ROLLING_AVERAGE } from 'config';
 import { NGramRecord, Result, Scores, Word } from 'interfaces';
-
-const ROLLING_AVERAGE = 20;
 
 export const getRandomItem = (list: any[]): any => {
   const idx = Math.floor(Math.random() * list.length);
@@ -50,8 +49,8 @@ const addResult = (record: NGramRecord, result: Result) => {
   // trim off our history to stay within our rolling average
   const excess = record.times.length - ROLLING_AVERAGE;
   if (excess > 0) {
-    record.times = record.times.slice(excess);
-    record.correct = record.correct.slice(excess);
+    record.times = record.times.slice(ROLLING_AVERAGE);
+    record.correct = record.correct.slice(ROLLING_AVERAGE);
   }
 
   // compute our new average speed

@@ -20,7 +20,7 @@ class App extends React.Component<{}, AppState> {
 
     const scores = JSON.parse(localStorage.getItem("app") || "{}").scores || {};
     this.state = {
-      lessons: false,
+      lessons: true,
       loaded: false,
       scores
     };

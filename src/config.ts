@@ -1,6 +1,7 @@
-export const TARGET_WPM = 80;
+export const TARGET_WPM = 85;
 export const TARGET_ACCURACY = 95;
 export const TARGET_RECORDS = 5;
+export const ROLLING_AVERAGE = 20;
 export const HIGH_FREQ_BIAS = 0.75; // % chance of getting a high frequency gram
 export const HIGH_FREQ_CUTTOFF = 0.35; // % of grams considered high frequency
 export const HISTORY_BIAS = 0.75; // % of words that consider your history

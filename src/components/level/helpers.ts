@@ -4,7 +4,7 @@ import { NGramRecord } from 'interfaces';
 import Words from 'Words';
 
 const NGRAMS_PER_LEVEL = 2;
-const INTRODUCE_TRIGRAMS = 30;
+const INTRODUCE_TRIGRAMS = 20;
 const TRIGRAMS_EVERY = 3;
 
 export const getNGramsForLevel = (words: Words, level: number): string[] => {

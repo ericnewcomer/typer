@@ -2,7 +2,7 @@ import Digits from 'components/digits/Digits';
 import { getNGramsForLevel, getPercentComplete } from 'components/level/helpers';
 import { TypeBox } from 'components/typebox/TypeBox';
 import { IDLE_THRESHOLD, MAX_SPRINT_LENGTH, NGRAM_COMPONENT, TARGET_ACCURACY, TARGET_WPM } from 'config';
-import { addResultToScores, wordsToString } from 'helpers';
+import { addResultToScores, getWPM, wordsToString } from 'helpers';
 import { Result, Scores, Word } from 'interfaces';
 import * as React from 'react';
 import Words from 'Words';
@@ -70,24 +70,39 @@ export default class Level extends React.Component<LevelProps, LevelState> {
           />
         </div>
 
-        {false
-          ? this.state.ngrams.map((ngram: string) => {
-              const result = this.props.scores[ngram];
+        <div className={styles.progress}>
+          {this.state.ngrams.map((ngram: string) => {
+            const result = this.props.scores[ngram];
 
-              const stats = result ? (
-                <div className={styles.stats}>
-                  {getPercentComplete(TARGET_WPM, TARGET_ACCURACY, result)}
-                </div>
-              ) : null;
+            const pct = result
+              ? getPercentComplete(TARGET_WPM, TARGET_ACCURACY, result)
+              : 0;
 
-              return (
-                <div key={ngram} className={styles.level_item}>
-                  <div className={styles.ngram}>{ngram}</div>
-                  {stats}
-                </div>
-              );
-            })
-          : null}
+            return (
+              <div
+                key={ngram}
+                className={
+                  styles.level_item + " " + (pct === 100 ? styles.complete : "")
+                }
+              >
+                <div
+                  className={styles.progress_bar}
+                  style={{
+                    height: pct + "%"
+                  }}
+                />
+                <div className={styles.ngram}>{ngram}</div>
+                {result ? (
+                  <div className={styles.wpm_wrapper}>
+                    <div className={styles.ngram_wpm}>
+                      <Digits count={getWPM(result)} />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   }
@@ -135,22 +150,20 @@ export default class Level extends React.Component<LevelProps, LevelState> {
     const lessonWPM = Math.floor(((chars / time) * 1000 * 60) / 5);
 
     let ngrams: string[] = [...this.state.ngrams];
-
+    let incomplete = 0;
     this.state.ngrams.forEach((ngram: string) => {
       const result = scores[ngram];
       if (result) {
         const pct = getPercentComplete(TARGET_WPM, TARGET_ACCURACY, result);
-        if (pct >= 100) {
-          ngrams = ngrams.filter((ng: string) => {
-            return ng !== ngram;
-          });
+        if (pct < 100) {
+          incomplete++;
         }
       }
     });
 
     let currentLevel = this.state.currentLevel;
-    if (ngrams.length === 0) {
-      this.setState({ lessonWPM, ngrams });
+    if (incomplete === 0) {
+      this.setState({ lessonWPM });
       this.handleLevelUp();
       return;
     }
@@ -187,12 +200,24 @@ export default class Level extends React.Component<LevelProps, LevelState> {
     // the ngrams can also be a smaller percentage of the word
     const ngramComp = Math.max(0.2, NGRAM_COMPONENT - decilesCompleted * 0.05);
 
-    const ngrams =
-      this.state.ngrams.length === 0
-        ? getNGramsForLevel(this.props.words, this.state.currentLevel)
-        : this.state.ngrams;
+    let incompleteGrams = this.state.ngrams.filter((ngram: string) => {
+      const result = this.props.scores[ngram];
+      return (
+        result && getPercentComplete(TARGET_WPM, TARGET_ACCURACY, result) < 100
+      );
+    });
+
+    let ngrams = this.state.ngrams;
+    if (incompleteGrams.length === 0) {
+      incompleteGrams = getNGramsForLevel(
+        this.props.words,
+        this.state.currentLevel
+      );
+      ngrams = incompleteGrams;
+    }
+
     const currentWords = this.props.words.getWordsForNGrams(
-      ngrams,
+      incompleteGrams,
       length,
       ngramComp
     );
