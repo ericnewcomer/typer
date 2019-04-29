@@ -1,7 +1,7 @@
 import Digits from 'components/digits/Digits';
 import { calculateScoreSort, ScoreSort } from 'components/sandbox/helpers';
 import { TypeBox } from 'components/typebox/TypeBox';
-import { Config, HISTORY_SPREAD, SCORE_LIFESPAN } from 'config';
+import { Config, HISTORY_SPREAD } from 'config';
 import { addResultToScores, wordsToString } from 'helpers';
 import { Result, Scores, Word } from 'interfaces';
 import * as React from 'react';
@@ -87,7 +87,10 @@ export default class Sandbox extends React.Component<
 
     const sprints = this.state.sprints + 1;
     let scoreSort: ScoreSort[] = this.state.scoreSort || [];
-    if (scoreSort.length === 0 || sprints % SCORE_LIFESPAN === 0) {
+    if (
+      scoreSort.length === 0 ||
+      sprints % this.props.config.scoreLifespan === 0
+    ) {
       scoreSort = calculateScoreSort(scores);
     }
 

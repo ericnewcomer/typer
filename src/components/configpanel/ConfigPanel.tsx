@@ -55,6 +55,13 @@ export default class ConfigPanel extends React.Component<
               { name: "Longer sprints", value: 45 },
               { name: "Shorter sprints", value: 25 }
             )}
+
+            {this.composeNumericSwitch(
+              "Random Letters",
+              "ngramComponent",
+              { name: "75% of letters can be anything", value: 0.25 },
+              { name: "50% of letters can be anything", value: 0.5 }
+            )}
           </div>
 
           {this.props.section === "lessons" ? (
@@ -75,12 +82,6 @@ export default class ConfigPanel extends React.Component<
               )}
 
               {this.composeNumericSwitch(
-                "Random Letters",
-                "ngramComponent",
-                { name: "75% of letters can be anything", value: 0.25 },
-                { name: "50% of letters can be anything", value: 0.5 }
-              )}
-              {this.composeNumericSwitch(
                 "Punishment",
                 "punishment",
                 { name: "Punishment", value: 1 },
@@ -93,6 +94,14 @@ export default class ConfigPanel extends React.Component<
           {this.props.section === "sandbox" ? (
             <div className={styles.section}>
               <div className={styles.subtitle}>Sandbox</div>
+
+              {this.composeNumericSwitch(
+                "Score Lifespan",
+                "scoreLifespan",
+                { name: "Frequently choose new problems", value: 5 },
+                { name: "Work on problems longer", value: 20 }
+              )}
+
               {this.composeNumericSwitch(
                 "Frequencey Bias",
                 "highFrequencyBias",
@@ -104,7 +113,7 @@ export default class ConfigPanel extends React.Component<
                 "History Bias",
                 "historyBias",
                 { name: "Occassionally add words randomly", value: 0.75 },
-                { name: "Stick to problem areas", value: 1 }
+                { name: "Only pick words with problems", value: 1 }
               )}
             </div>
           ) : null}

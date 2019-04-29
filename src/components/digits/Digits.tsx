@@ -9,6 +9,8 @@ interface DigitsState {
 }
 
 export default class Digits extends React.Component<DigitsProps, DigitsState> {
+  private lastTimeout: any;
+
   constructor(props: DigitsProps) {
     super(props);
     this.state = {
@@ -23,12 +25,18 @@ export default class Digits extends React.Component<DigitsProps, DigitsState> {
     }
   }
 
+  public componentWillUnmount(): void {
+    if (this.lastTimeout) {
+      window.clearTimeout(this.lastTimeout);
+    }
+  }
+
   public render(): JSX.Element {
     return <span>{this.state.currentCount}</span>;
   }
 
   private animateCount(): void {
-    window.setTimeout(() => {
+    this.lastTimeout = window.setTimeout(() => {
       this.setState(
         (prevState: DigitsState) => {
           const { currentCount } = prevState;
