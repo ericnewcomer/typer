@@ -151,3 +151,19 @@ export const getWordsForNGram = (
     );
   });
 };
+
+export const getWordAt = (sprint: string, index: number) => {
+  let startIndex = 0;
+  let endIndex = sprint.indexOf(" ", index);
+  if (endIndex === -1) {
+    endIndex = sprint.length;
+  }
+  for (let i = index; i > 0; i--) {
+    if (sprint.charAt(i) === " ") {
+      startIndex = i + 1;
+      break;
+    }
+  }
+
+  return sprint.substring(startIndex, endIndex);
+};

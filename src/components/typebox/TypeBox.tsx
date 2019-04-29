@@ -1,6 +1,6 @@
 import './TypeBox.scss';
 
-import { isInsideGram } from 'helpers';
+import { getWordAt, isInsideGram } from 'helpers';
 import { Result, Word } from 'interfaces';
 import * as React from 'react';
 
@@ -147,12 +147,19 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
           time += this.state.timings[i + j];
         }
 
+        let word: any;
+        if (this.props.words) {
+          const wordText = getWordAt(this.props.sprint, i);
+          word = this.props.words.find((w: Word) => w.text === wordText);
+        }
+
         if (time > 0) {
           results.push({
             type: gramSize,
             gram,
             correct,
-            time
+            time,
+            word
           });
         }
       }

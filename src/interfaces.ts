@@ -1,4 +1,4 @@
-export type Nullable<T> = T | null;
+export type Nullable<T> = T | null | undefined;
 
 export interface Scores {
   [gram: string]: NGramRecord;
@@ -27,6 +27,7 @@ export interface Result {
   gram: string;
   time: number;
   correct: boolean;
+  word: Word;
 }
 
 export interface Word {

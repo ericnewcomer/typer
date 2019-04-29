@@ -79,6 +79,7 @@ class App extends React.Component<{}, AppState> {
     return (
       <div className={styles.app}>
         <ConfigPanel
+          section={this.state.lessons ? "lessons" : "sandbox"}
           config={this.state.config}
           onConfigUpdated={this.handleConfigUpdated}
         />

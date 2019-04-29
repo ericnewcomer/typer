@@ -6,6 +6,7 @@ import styles from './ConfigPanel.module.scss';
 
 interface ConfigPanelProps {
   config: Config;
+  section: string;
   onConfigUpdated: (config: Config) => void;
 }
 
@@ -44,40 +45,69 @@ export default class ConfigPanel extends React.Component<
           >
             X
           </div>
-          {this.composeNumericSwitch(
-            "Speed",
-            "targetWPM",
-            { name: "100 WPM", value: 100 },
-            { name: "85 WPM", value: 85 }
-          )}
 
-          {this.composeNumericSwitch(
-            "Accuracy",
-            "targetAccuracy",
-            { name: "100% Accuracy", value: 100 },
-            { name: "95% Accuracy", value: 95 }
-          )}
+          <div className={styles.section}>
+            <div className={styles.subtitle}>General</div>
 
-          {this.composeNumericSwitch(
-            "Frequencey Bias",
-            "highFrequencyBias",
-            { name: "75% of words can be infrequent", value: 0.25 },
-            { name: "25% of words can be infrequent", value: 0.75 }
-          )}
+            {this.composeNumericSwitch(
+              "Sprint Length",
+              "sprintLength",
+              { name: "Longer sprints", value: 45 },
+              { name: "Shorter sprints", value: 25 }
+            )}
+          </div>
 
-          {this.composeNumericSwitch(
-            "Random Letters",
-            "ngramComponent",
-            { name: "75% of letters can be anything", value: 0.25 },
-            { name: "50% of letters can be anything", value: 0.5 }
-          )}
+          {this.props.section === "lessons" ? (
+            <div className={styles.section}>
+              <div className={styles.subtitle}>Lessons</div>
+              {this.composeNumericSwitch(
+                "Speed",
+                "targetWPM",
+                { name: "100 WPM", value: 100 },
+                { name: "85 WPM", value: 85 }
+              )}
 
-          {this.composeNumericSwitch(
-            "Sprint Length",
-            "sprintLength",
-            { name: "Longer lessons", value: 45 },
-            { name: "Shorter lessons", value: 25 }
-          )}
+              {this.composeNumericSwitch(
+                "Accuracy",
+                "targetAccuracy",
+                { name: "99% Accuracy", value: 99 },
+                { name: "95% Accuracy", value: 95 }
+              )}
+
+              {this.composeNumericSwitch(
+                "Random Letters",
+                "ngramComponent",
+                { name: "75% of letters can be anything", value: 0.25 },
+                { name: "50% of letters can be anything", value: 0.5 }
+              )}
+              {this.composeNumericSwitch(
+                "Punishment",
+                "punishment",
+                { name: "Punishment", value: 1 },
+                { name: "Mistakes are okay", value: 0 },
+                true
+              )}
+            </div>
+          ) : null}
+
+          {this.props.section === "sandbox" ? (
+            <div className={styles.section}>
+              <div className={styles.subtitle}>Sandbox</div>
+              {this.composeNumericSwitch(
+                "Frequencey Bias",
+                "highFrequencyBias",
+                { name: "40% of words can be infrequent", value: 0.6 },
+                { name: "5% of words can be infrequent", value: 0.95 }
+              )}
+
+              {this.composeNumericSwitch(
+                "History Bias",
+                "historyBias",
+                { name: "Occassionally add words randomly", value: 0.75 },
+                { name: "Stick to problem areas", value: 1 }
+              )}
+            </div>
+          ) : null}
         </div>
         <div
           className={styles.open_panel}
@@ -97,7 +127,8 @@ export default class ConfigPanel extends React.Component<
     name: string,
     property: string,
     on: NumericSetting,
-    off: NumericSetting
+    off: NumericSetting,
+    pain?: boolean
   ): JSX.Element {
     const active = (this.props.config as any)[property] === on.value ? on : off;
 
@@ -106,6 +137,7 @@ export default class ConfigPanel extends React.Component<
         name={name}
         valueName={active.name}
         flipped={active === on}
+        pain={pain}
         onToggle={(event: React.ChangeEvent<HTMLInputElement>) => {
           const config: any = { ...this.props.config };
           config[property] = event.target.checked ? on.value : off.value;

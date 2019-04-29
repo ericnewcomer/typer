@@ -2,7 +2,7 @@ import Digits from 'components/digits/Digits';
 import { getNGramsForLevel, getPercentComplete, getSeverityColor } from 'components/level/helpers';
 import { TypeBox } from 'components/typebox/TypeBox';
 import { Config, MAX_SPRINT_LENGTH } from 'config';
-import { addResultToScores, getWPM, wordsToString } from 'helpers';
+import { addResultToScores, getWPM, wordsLength, wordsToString } from 'helpers';
 import { Result, Scores, Word } from 'interfaces';
 import * as React from 'react';
 import Words from 'Words';
@@ -170,7 +170,12 @@ export default class Level extends React.Component<LevelProps, LevelState> {
       }
     });
 
+    let mistake: Word;
     results.forEach((result: Result) => {
+      if (!result.correct) {
+        mistake = result.word;
+      }
+
       // ignore excessive times
       if (result.time < this.props.config.idleThreshold) {
         addResultToScores(scores, result, this.props.config.rollingAverage);
@@ -199,7 +204,22 @@ export default class Level extends React.Component<LevelProps, LevelState> {
 
     this.props.onScoresUpdated(scores);
     this.setState({ lessonWPM, ngrams, currentLevel }, () => {
-      this.updateNextSprint();
+      // see if they need to be punished
+      if (this.props.config.punishment && mistake) {
+        const words: Word[] = [];
+        while (
+          wordsLength([...words, mistake]) < this.props.config.sprintLength
+        ) {
+          words.push(mistake);
+        }
+
+        this.setState({
+          currentWords: words,
+          currentSprint: wordsToString(words)
+        });
+      } else {
+        this.updateNextSprint();
+      }
     });
   };
 

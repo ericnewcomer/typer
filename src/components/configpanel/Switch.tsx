@@ -7,13 +7,17 @@ interface SwitchProps {
   valueName: string;
   flipped: boolean;
   onToggle: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  pain?: boolean;
 }
 
 export default class Switch extends React.Component<SwitchProps> {
   public render(): JSX.Element {
     return (
       <div className={styles.container}>
-        <label className={styles.switch} htmlFor={this.props.name}>
+        <label
+          className={styles.switch + " " + (this.props.pain ? styles.pain : "")}
+          htmlFor={this.props.name}
+        >
           <input
             type="checkbox"
             id={this.props.name}

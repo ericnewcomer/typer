@@ -93,6 +93,7 @@ export default class Sandbox extends React.Component<
 
     const nextSprint = this.props.words.getNextSprint(
       this.props.config.highFrequencyBias,
+      this.props.config.historyBias,
       scoreSort
     );
 

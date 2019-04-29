@@ -1,5 +1,5 @@
 import { ScoreSort } from 'components/sandbox/helpers';
-import { HIGH_FREQ_CUTTOFF, HISTORY_BIAS, HISTORY_SPREAD } from 'config';
+import { HIGH_FREQ_CUTTOFF, HISTORY_SPREAD } from 'config';
 import { getRandomItem, getWordsForNGram, wordsLength } from 'helpers';
 import { Nullable, Word } from 'interfaces';
 
@@ -196,11 +196,15 @@ export default class Words {
     return selectedWords;
   }
 
-  public getNextSprint(highFreqBias: number, scores?: ScoreSort[]): Word[] {
+  public getNextSprint(
+    highFreqBias: number,
+    historyBias: number,
+    scores?: ScoreSort[]
+  ): Word[] {
     const words: Word[] = [];
     for (let i = 0; i < 10; i++) {
       let gram: string = "";
-      if (scores && scores.length > 0 && Math.random() < HISTORY_BIAS) {
+      if (scores && scores.length > 0 && Math.random() < historyBias) {
         gram =
           scores[
             Math.floor(Math.random() * Math.min(scores.length, HISTORY_SPREAD))
@@ -209,7 +213,7 @@ export default class Words {
 
       if (wordsLength(words) < 30) {
         const nextWord = getNextWord(this.words, highFreqBias, gram);
-        if (nextWord !== null) {
+        if (nextWord) {
           words.push(nextWord);
         }
       }
