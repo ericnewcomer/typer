@@ -26,11 +26,14 @@ class App extends React.Component<{}, AppState> {
       localStorage.getItem("app") || "{}"
     );
 
+    const config = appState.config || getDefaultConfig();
+    config.painLevel = config.painLevel || 0;
+
     this.state = {
       lessons: !!appState.lessons,
       loaded: false,
       scores: appState.scores || {},
-      config: appState.config || getDefaultConfig()
+      config
     };
 
     this.words = new Words(() => {

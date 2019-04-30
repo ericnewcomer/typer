@@ -24,7 +24,7 @@ export const getDefaultConfig = (): Config => {
     sprintLength: START_SPRINT_LENGTH,
     historyBias: HISTORY_BIAS,
     scoreLifespan: SCORE_LIFESPAN,
-    painLevel: 1
+    painLevel: 0
   };
 };
 
