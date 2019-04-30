@@ -1,4 +1,4 @@
-import { NGramRecord, Result, Scores, Word } from 'interfaces';
+import { NGramRecord, Result, Scores, Undefinable, Word } from 'interfaces';
 
 export const getRandomItem = (list: any[]): any => {
   const idx = Math.floor(Math.random() * list.length);
@@ -152,18 +152,19 @@ export const getWordsForNGram = (
   });
 };
 
-export const getWordAt = (sprint: string, index: number) => {
-  let startIndex = 0;
-  let endIndex = sprint.indexOf(" ", index);
-  if (endIndex === -1) {
-    endIndex = sprint.length;
-  }
-  for (let i = index; i > 0; i--) {
-    if (sprint.charAt(i) === " ") {
-      startIndex = i + 1;
-      break;
-    }
+export const getWordAt = (
+  words: Undefinable<Word[]>,
+  index: number
+): Undefinable<Word> => {
+  if (!words) {
+    return undefined;
   }
 
-  return sprint.substring(startIndex, endIndex);
+  let pos = 0;
+  for (const word of words) {
+    pos += word.text.length + 1;
+    if (index < pos) {
+      return word;
+    }
+  }
 };

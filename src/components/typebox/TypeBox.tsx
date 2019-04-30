@@ -1,7 +1,8 @@
 import './TypeBox.scss';
 
+import { getSeverityColor } from 'components/level/helpers';
 import { getWordAt, isInsideGram } from 'helpers';
-import { Result, Word } from 'interfaces';
+import { Result, Undefinable, Word } from 'interfaces';
 import * as React from 'react';
 
 enum CharState {
@@ -56,6 +57,7 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
       const nextChar = this.props.sprint.charAt(i);
       const charState = this.state.sprintState[i];
 
+      let charStyles = {};
       const classes = ["character"];
       if (nextChar === " ") {
         classes.push("space");
@@ -70,12 +72,16 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
         isInsideGram(this.props.words || [], i)
       ) {
         classes.push("ngram");
+        const word = getWordAt(this.props.words, i);
+        if (word && word.pct) {
+          charStyles = { color: getSeverityColor(word.pct) };
+        }
       }
 
       classes.push(charState);
 
       chars.push(
-        <div key={"char_" + i} className={classes.join(" ")}>
+        <div key={"char_" + i} style={charStyles} className={classes.join(" ")}>
           {nextChar === " " ? " " : nextChar}{" "}
         </div>
       );
@@ -147,11 +153,7 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
           time += this.state.timings[i + j];
         }
 
-        let word: any;
-        if (this.props.words) {
-          const wordText = getWordAt(this.props.sprint, i);
-          word = this.props.words.find((w: Word) => w.text === wordText);
-        }
+        let word: Undefinable<Word> = getWordAt(this.props.words, i);
 
         if (time > 0) {
           results.push({
@@ -191,6 +193,11 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
       if (this.props.onKeyPressed(key)) {
         return;
       }
+    }
+
+    // ignore spaces on the first letter
+    if (key === " " && this.state.cursor === 0) {
+      return;
     }
 
     if (key.length > 1) {

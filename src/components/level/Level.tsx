@@ -1,9 +1,9 @@
 import Digits from 'components/digits/Digits';
-import { getNGramsForLevel, getPercentComplete, getSeverityColor } from 'components/level/helpers';
+import { addNGramScores, getNGramsForLevel, getPercentComplete, getSeverityColor } from 'components/level/helpers';
 import { TypeBox } from 'components/typebox/TypeBox';
 import { Config, MAX_SPRINT_LENGTH } from 'config';
 import { addResultToScores, getWPM, wordsLength, wordsToString } from 'helpers';
-import { Result, Scores, Word } from 'interfaces';
+import { Result, Scores, Undefinable, Word } from 'interfaces';
 import * as React from 'react';
 import Words from 'Words';
 
@@ -38,6 +38,13 @@ export default class Level extends React.Component<LevelProps, LevelState> {
       ngrams,
       Math.min(this.props.config.sprintLength, MAX_SPRINT_LENGTH),
       this.props.config.ngramComponent
+    );
+
+    addNGramScores(
+      this.props.config.targetWPM,
+      this.props.config.targetAccuracy,
+      currentWords,
+      this.props.scores
     );
 
     this.state = {
@@ -170,7 +177,7 @@ export default class Level extends React.Component<LevelProps, LevelState> {
       }
     });
 
-    let mistake: Word;
+    let mistake: Undefinable<Word>;
     results.forEach((result: Result) => {
       if (!result.correct) {
         mistake = result.word;
@@ -281,6 +288,15 @@ export default class Level extends React.Component<LevelProps, LevelState> {
       sprintLength,
       ngramComp
     );
+
+    addNGramScores(
+      this.props.config.targetWPM,
+      this.props.config.targetAccuracy,
+      currentWords,
+      this.props.scores
+    );
+
+    console.log(currentWords);
 
     const currentSprint = wordsToString(currentWords);
     this.setState({

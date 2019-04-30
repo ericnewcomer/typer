@@ -1,5 +1,6 @@
 import { react as bindCallbacks } from 'auto-bind';
 import ConfigPanel from 'components/configpanel/ConfigPanel';
+import { getSeverityColor } from 'components/level/helpers';
 import Level from 'components/level/Level';
 import Sandbox from 'components/sandbox/Sandbox';
 import { Config, getDefaultConfig } from 'config';
@@ -74,6 +75,21 @@ class App extends React.Component<{}, AppState> {
   public render() {
     if (!this.state.loaded) {
       return <div />;
+    }
+
+    const colors = [];
+    for (let i = 0; i < 100; i++) {
+      colors.push(
+        <div
+          style={{
+            height: 20,
+            width: 20,
+            background: getSeverityColor(i)
+          }}
+        >
+          {i}
+        </div>
+      );
     }
 
     return (

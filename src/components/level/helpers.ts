@@ -1,6 +1,6 @@
 import { TARGET_RECORDS } from 'config';
 import { getWPM } from 'helpers';
-import { NGramRecord } from 'interfaces';
+import { NGramRecord, Scores, Word } from 'interfaces';
 import Words from 'Words';
 
 const NGRAMS_PER_LEVEL = 2;
@@ -62,7 +62,62 @@ export const getPercentComplete = (
   );
 };
 
+export const addNGramScores = (
+  targetSpeed: number,
+  targetAccuracy: number,
+  words: Word[],
+  scores: Scores
+) => {
+  words.forEach((word: Word) => {
+    if (word.ngram) {
+      const record = scores[word.ngram];
+      if (record) {
+        word.pct = getPercentComplete(targetSpeed, targetAccuracy, record);
+      }
+    }
+  });
+};
+
+/*export const getSeverityColor = (pct: number) => {
+  var hue = (Math.max(pct / 10 - 9, 0) * 120).toString(10);
+  return ["hsl(" + hue + ",64%,68%)"].join("");
+};*/
+
+var percentColors = [
+  // { pct: 0.0, color: { r: 0xe5, g: 0x26, b: 0x20 } },
+  // { pct: 0.0, color: { r: 0xa8, g: 0x71, b: 0xc6 } },
+  // { pct: 1.0, color: { r: 0x1c, g: 0x83, b: 0xd8 } },
+
+  // { pct: 0.3, color: { r: 0xf2, g: 0x91, b: 0x09 } },
+
+  // blue to green
+  // { pct: 0, color: { r: 0x22, g: 0x5d, b: 0xe8 } },
+  // { pct: 1.0, color: { r: 0x0c, g: 0x96, b: 0x15 } }
+
+  { pct: 0, color: { r: 0xff, g: 0xb6, b: 0x00 } },
+  // { pct: 0.5, color: { r: 0xc3, g: 0xff, b: 0x00 } },
+  { pct: 1.0, color: { r: 0x0c, g: 0x96, b: 0x15 } }
+];
+
 export const getSeverityColor = (pct: number) => {
-  var hue = (pct * 80).toString(10);
-  return ["hsl(", hue, ",100%,50%)"].join("");
+  pct = pct / 10 - 9;
+  pct = Math.max(0, pct);
+
+  for (var i = 1; i < percentColors.length - 1; i++) {
+    if (pct < percentColors[i].pct) {
+      break;
+    }
+  }
+  const lower = percentColors[i - 1];
+  const upper = percentColors[i];
+  const range = upper.pct - lower.pct;
+  const rangePct = (pct - lower.pct) / range;
+  const pctLower = 1 - rangePct;
+  const pctUpper = rangePct;
+  const color = {
+    r: Math.floor(lower.color.r * pctLower + upper.color.r * pctUpper),
+    g: Math.floor(lower.color.g * pctLower + upper.color.g * pctUpper),
+    b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
+  };
+  return "rgb(" + [color.r, color.g, color.b].join(",") + ")";
 };
