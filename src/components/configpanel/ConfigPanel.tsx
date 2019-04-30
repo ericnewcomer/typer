@@ -88,6 +88,14 @@ export default class ConfigPanel extends React.Component<
                 { name: "Mistakes are okay", value: 0 },
                 true
               )}
+
+              {this.composeNumericSwitch(
+                "Pain Level",
+                "painLevel",
+                { name: "Stack up mistakes", value: 10 },
+                { name: "One mistake at a time", value: 1 },
+                true
+              )}
             </div>
           ) : null}
 

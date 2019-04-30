@@ -24,7 +24,8 @@ export const getDefaultConfig = (): Config => {
     sprintLength: START_SPRINT_LENGTH,
     historyBias: HISTORY_BIAS,
     scoreLifespan: SCORE_LIFESPAN,
-    punishment: false
+    punishment: false,
+    painLevel: 1
   };
 };
 
@@ -39,4 +40,5 @@ export interface Config {
   historyBias: number;
   scoreLifespan: number;
   punishment: boolean;
+  painLevel: 1;
 }
