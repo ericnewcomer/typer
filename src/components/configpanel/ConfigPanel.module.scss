@@ -50,3 +50,33 @@
   font-size: 30px;
   cursor: pointer;
 }
+
+.wpm {
+  padding-top: 50px;
+  padding-bottom: 15px;
+  padding-left: 15px;
+  width: 80%;
+}
+
+.accuracy {
+  padding-top: 50px;
+  padding-bottom: 45px;
+  padding-left: 15px;
+  width: 80%;
+}
+
+.punishment {
+  padding-top: 100px;
+  padding-bottom: 15px;
+  padding-left: 15px;
+  width: 80%;
+}
+
+:global .noUi-tooltip {
+  color: #999;
+  padding: 7px 10px;
+  font-size: 13px;
+}
+:global .tooltip-emoji {
+  font-size: 40px;
+}

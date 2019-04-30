@@ -180,7 +180,7 @@ export default class Level extends React.Component<LevelProps, LevelState> {
     });
 
     results.forEach((result: Result) => {
-      if (this.props.config.punishment) {
+      if (this.props.config.painLevel > 0) {
         if (!result.correct) {
           if (result.word) {
             const text = result.word.text;
@@ -232,7 +232,7 @@ export default class Level extends React.Component<LevelProps, LevelState> {
 
     this.setState({ lessonWPM, ngrams, currentLevel, mistakes }, () => {
       // see if they need to be punished
-      if (this.props.config.punishment && mistakes.length > 0) {
+      if (this.props.config.painLevel > 0 && mistakes.length > 0) {
         const mistake = mistakes[0];
         const words: Word[] = [];
         while (

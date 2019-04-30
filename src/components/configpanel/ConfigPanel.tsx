@@ -1,5 +1,8 @@
+import 'nouislider/distribute/nouislider.css';
+
 import Switch from 'components/configpanel/Switch';
 import { Config } from 'config';
+import Nouislider from 'nouislider-react';
 import * as React from 'react';
 
 import styles from './ConfigPanel.module.scss';
@@ -29,6 +32,18 @@ export default class ConfigPanel extends React.Component<
       open: false
     };
   }
+
+  onUpdateSlider = (property: string, floor: boolean = false) => (
+    render: any,
+    handle: any,
+    value: number,
+    un: any,
+    percent: any
+  ) => {
+    const config: any = { ...this.props.config };
+    config[property] = floor ? Math.floor(value) : value;
+    this.props.onConfigUpdated(config);
+  };
 
   public render(): JSX.Element {
     return (
@@ -67,35 +82,54 @@ export default class ConfigPanel extends React.Component<
           {this.props.section === "lessons" ? (
             <div className={styles.section}>
               <div className={styles.subtitle}>Lessons</div>
-              {this.composeNumericSwitch(
-                "Speed",
-                "targetWPM",
-                { name: "100 WPM", value: 100 },
-                { name: "85 WPM", value: 85 }
-              )}
 
-              {this.composeNumericSwitch(
-                "Accuracy",
-                "targetAccuracy",
-                { name: "99% Accuracy", value: 99 },
-                { name: "95% Accuracy", value: 95 }
-              )}
+              <div className={styles.punishment}>
+                <Nouislider
+                  onChange={this.onUpdateSlider("painLevel", true) as any}
+                  range={{ min: 0, max: 10 }}
+                  step={1}
+                  tooltips={[
+                    {
+                      to: (value: number) => {
+                        if (value === 0) {
+                          return "<div class='tooltip-emoji'>😄</div>";
+                        } else if (value < 2) {
+                          return "<div class='tooltip-emoji'>😬</div>";
+                        } else if (value < 5) {
+                          return "<div class='tooltip-emoji'>😫</div>";
+                        } else if (value < 10) {
+                          return "<div class='tooltip-emoji'>😡</div>";
+                        } else {
+                          return "<div class='tooltip-emoji'>🤬</div>";
+                        }
+                      }
+                    }
+                  ]}
+                  start={[this.props.config.painLevel]}
+                />
+              </div>
 
-              {this.composeNumericSwitch(
-                "Punishment",
-                "punishment",
-                { name: "Punishment", value: 1 },
-                { name: "Mistakes are okay", value: 0 },
-                true
-              )}
+              <div className={styles.wpm}>
+                <Nouislider
+                  onChange={this.onUpdateSlider("targetWPM", true) as any}
+                  range={{ min: 30, max: 135 }}
+                  tooltips={[
+                    { to: (value: number) => Math.floor(value) + " WPM" }
+                  ]}
+                  start={[this.props.config.targetWPM]}
+                />
+              </div>
 
-              {this.composeNumericSwitch(
-                "Pain Level",
-                "painLevel",
-                { name: "Stack up mistakes", value: 10 },
-                { name: "One mistake at a time", value: 1 },
-                true
-              )}
+              <div className={styles.accuracy}>
+                <Nouislider
+                  onChange={this.onUpdateSlider("targetAccuracy", true) as any}
+                  range={{ min: 75, max: 99 }}
+                  tooltips={[
+                    { to: (value: number) => Math.floor(value) + "% Accuracy" }
+                  ]}
+                  start={[this.props.config.targetAccuracy]}
+                />
+              </div>
             </div>
           ) : null}
 
