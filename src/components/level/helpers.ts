@@ -45,6 +45,11 @@ export const getPercentComplete = (
   targetAccuracy: number,
   record: NGramRecord
 ) => {
+  // target speet is 3/4 for double letters
+  if (record.gram.length === 2 && record.gram[0] === record.gram[1]) {
+    targetSpeed *= 0.75;
+  }
+
   const speedScore = Math.min(
     100,
     Math.floor((100 * getWPM(record)) / targetSpeed)
