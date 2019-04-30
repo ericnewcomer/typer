@@ -38,5 +38,5 @@ export interface Config {
   sprintLength: number;
   historyBias: number;
   scoreLifespan: number;
-  painLevel: 1;
+  painLevel: number;
 }
