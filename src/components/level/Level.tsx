@@ -99,7 +99,7 @@ export default class Level extends React.Component<LevelProps, LevelState> {
                 style={
                   {
                     // borderColor: getSeverityColor(
-                    //result ? result.accuracy + 0.05 : 1
+                    // result ? result.accuracy + 0.05 : 1
                     //)
                   }
                 }
@@ -107,7 +107,7 @@ export default class Level extends React.Component<LevelProps, LevelState> {
                 <div
                   className={styles.progress_bar}
                   style={{
-                    // background: getSeverityColor(result ? result.accuracy : 0),
+                    background: getSeverityColor(result ? pct : 0),
                     height: pct + "%"
                   }}
                 />
@@ -117,14 +117,11 @@ export default class Level extends React.Component<LevelProps, LevelState> {
                     <div
                       className={styles.ngram_wpm}
                       style={{
-                        color: "rgba(0,0,0,.2)",
-                        background:
-                          pct >= 100
-                            ? "#fff"
-                            : getSeverityColor(result ? result.accuracy : 0)
+                        color: "rgba(0,0,0,.4)",
+                        background: pct >= 100 ? "#fff" : "#fff" // getSeverityColor(result ? result.accuracy : 0)
                       }}
                     >
-                      {pct >= 100 ? "⭐" : <Digits count={getWPM(result)} />}
+                      {pct >= 100 ? "🔥" : <Digits count={getWPM(result)} />}
                     </div>
                   </div>
                 ) : null}

@@ -1,7 +1,8 @@
 // $progress: rgb(104, 184, 255);
 // $progress: rgb(197, 197, 197);
 // $progress: rgb(252, 178, 66);
-$progress: rgb(74, 173, 219);
+// $progress: rgb(74, 173, 219);
+$progress: rgb(196, 196, 196);
 $complete: rgb(76, 175, 97);
 
 .level {
@@ -43,9 +44,9 @@ $complete: rgb(76, 175, 97);
 
     font-weight: 100;
     display: inline-block;
-    border: 1px solid lighten($progress, 10%);
+    border: 1px solid lighten($progress, 5%);
     position: relative;
-    background: lighten($progress, 35%);
+    background: lighten($progress, 20%);
 
     &.complete {
       border-color: darken($complete, 5%);
@@ -101,7 +102,7 @@ $complete: rgb(76, 175, 97);
       text-align: center;
       font-weight: 700;
       font-size: 20px;
-      text-shadow: 0px 0px 2px darken($progress, 5%);
+      text-shadow: 0px 0px 2px darken($progress, 30%);
       position: relative;
       padding: 10px;
       bottom: 0px;
