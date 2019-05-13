@@ -73,8 +73,15 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
       ) {
         classes.push("ngram");
         const word = getWordAt(this.props.words, i);
-        if (word && word.pct) {
-          charStyles = { color: getSeverityColor(word.pct) };
+
+        if (word && word.pct !== undefined) {
+          charStyles = {
+            color: getSeverityColor(word.pct)
+            // textShadow: "0 0 2px " + getSeverityColor(word.pct)
+            // background: getSeverityColor(word.pct, 1.4)
+            // padding: "3px"
+            // fontWeight: Math.floor(word.pct * 10) - 600
+          };
         }
       }
 

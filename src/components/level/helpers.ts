@@ -1,14 +1,69 @@
-import { TARGET_RECORDS } from 'config';
+import { Config, TARGET_RECORDS } from 'config';
 import { getWPM } from 'helpers';
 import { NGramRecord, Scores, Word } from 'interfaces';
 import Words from 'Words';
 
-const NGRAMS_PER_LEVEL = 2;
+export const NGRAMS_PER_LEVEL = 2;
 const INTRODUCE_TRIGRAMS = 20;
 const TRIGRAMS_EVERY = 3;
 
-export const getNGramsForLevel = (words: Words, level: number): string[] => {
-  if (level >= INTRODUCE_TRIGRAMS && level % TRIGRAMS_EVERY === 0) {
+export const getAllNGrams = (words: Words, level: number): string[] => {
+  const ngrams: string[] = [];
+  for (let i = 0; i <= level; i++) {
+    ngrams.push(...getGramsForLevel(words, i));
+  }
+  return ngrams;
+};
+
+export const getIncompleteGrams = (
+  words: Words,
+  level: number,
+  scores: Scores,
+  config: Config
+): string[] => {
+  let incompleteGrams: string[] = [];
+
+  let stepLevel = 0;
+  while (incompleteGrams.length < NGRAMS_PER_LEVEL && stepLevel <= level) {
+    incompleteGrams.push(
+      ...getIncompleteGramsForLevel(words, stepLevel, scores, config)
+    );
+    stepLevel++;
+  }
+
+  // still none, give use our completed ngrams at this level
+  if (incompleteGrams.length === 0) {
+    return getGramsForLevel(words, level);
+  }
+
+  return incompleteGrams.slice(incompleteGrams.length - 2);
+};
+
+export const getIncompleteGramsForLevel = (
+  words: Words,
+  level: number,
+  scores: Scores,
+  config: Config
+): string[] => {
+  // filter out any grams we've already completed
+  return getGramsForLevel(words, level).filter((gram: string) => {
+    const result = scores[gram];
+    if (!result) {
+      return true;
+    }
+    return (
+      result &&
+      getPercentComplete(config.targetWPM, config.targetAccuracy, result) < 100
+    );
+  });
+};
+
+export const getGramsForLevel = (words: Words, level: number): string[] => {
+  // console.log(level);
+  if (
+    level >= INTRODUCE_TRIGRAMS &&
+    (level - INTRODUCE_TRIGRAMS) % TRIGRAMS_EVERY === 0
+  ) {
     level -= INTRODUCE_TRIGRAMS;
 
     const diff = level / TRIGRAMS_EVERY;
@@ -21,15 +76,19 @@ export const getNGramsForLevel = (words: Words, level: number): string[] => {
 
     const trigramStart = level * NGRAMS_PER_LEVEL;
     const trigramEnd = trigramStart + NGRAMS_PER_LEVEL;
-    return words.getTrigrams().ngrams.slice(trigramStart, trigramEnd);
+    const grams = words.getTrigrams().ngrams.slice(trigramStart, trigramEnd);
+
+    // console.log(grams);
+    return grams;
   }
 
   if (level > INTRODUCE_TRIGRAMS) {
-    const trigramsShown = Math.floor(
-      (level - INTRODUCE_TRIGRAMS) / TRIGRAMS_EVERY
-    );
+    const trigramsShown =
+      Math.floor((level - INTRODUCE_TRIGRAMS) / TRIGRAMS_EVERY) + 1;
 
     level -= trigramsShown;
+
+    // console.log("shown:", trigramsShown);
   }
 
   // tslint:disable-next-line: no-console
@@ -37,7 +96,10 @@ export const getNGramsForLevel = (words: Words, level: number): string[] => {
 
   const start = level * NGRAMS_PER_LEVEL;
   const end = start + NGRAMS_PER_LEVEL;
-  return words.getBigrams().ngrams.slice(start, end);
+  const grams = words.getBigrams().ngrams.slice(start, end);
+
+  // console.log(grams);
+  return grams;
 };
 
 export const getPercentComplete = (
@@ -76,9 +138,9 @@ export const addNGramScores = (
   words.forEach((word: Word) => {
     if (word.ngram) {
       const record = scores[word.ngram];
-      if (record) {
-        word.pct = getPercentComplete(targetSpeed, targetAccuracy, record);
-      }
+      word.pct = record
+        ? getPercentComplete(targetSpeed, targetAccuracy, record)
+        : 0;
     }
   });
 };
@@ -89,24 +151,19 @@ export const addNGramScores = (
 };*/
 
 var percentColors = [
-  // { pct: 0.0, color: { r: 0xe5, g: 0x26, b: 0x20 } },
-  // { pct: 0.0, color: { r: 0xa8, g: 0x71, b: 0xc6 } },
-  // { pct: 1.0, color: { r: 0x1c, g: 0x83, b: 0xd8 } },
-
-  // { pct: 0.3, color: { r: 0xf2, g: 0x91, b: 0x09 } },
-
-  // blue to green
-  // { pct: 0, color: { r: 0x22, g: 0x5d, b: 0xe8 } },
-  // { pct: 1.0, color: { r: 0x0c, g: 0x96, b: 0x15 } }
-
-  { pct: 0, color: { r: 0xff, g: 0xb6, b: 0x00 } },
-  // { pct: 0.5, color: { r: 0xc3, g: 0xff, b: 0x00 } },
-  { pct: 1.0, color: { r: 0x0c, g: 0x96, b: 0x15 } }
+  { pct: 0, color: { r: 0x71, g: 0xc0, b: 0xe8 } },
+  { pct: 0.9, color: { r: 0x71, g: 0xc0, b: 0xe8 } },
+  { pct: 0.9999, color: { r: 0x00, g: 0x76, b: 0xb2 } },
+  { pct: 1, color: { r: 0x6e, g: 0xb5, b: 0x58 } }
 ];
 
-export const getSeverityColor = (pct: number) => {
-  pct = pct / 10 - 9;
-  pct = Math.max(0, pct);
+export const getSeverityColor = (pct: number, adjustment: number = 1) => {
+  // console.log("o", pct);
+  // pct = (pct - 80) / 20;
+  // pct = Math.max(0, pct);
+  // console.log("a", pct);
+
+  pct /= 100;
 
   for (var i = 1; i < percentColors.length - 1; i++) {
     if (pct < percentColors[i].pct) {
@@ -120,9 +177,15 @@ export const getSeverityColor = (pct: number) => {
   const pctLower = 1 - rangePct;
   const pctUpper = rangePct;
   const color = {
-    r: Math.floor(lower.color.r * pctLower + upper.color.r * pctUpper),
-    g: Math.floor(lower.color.g * pctLower + upper.color.g * pctUpper),
-    b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
+    r: Math.floor(
+      lower.color.r * pctLower + upper.color.r * pctUpper * adjustment
+    ),
+    g: Math.floor(
+      lower.color.g * pctLower + upper.color.g * pctUpper * adjustment
+    ),
+    b: Math.floor(
+      lower.color.b * pctLower + upper.color.b * pctUpper * adjustment
+    )
   };
   return "rgb(" + [color.r, color.g, color.b].join(",") + ")";
 };

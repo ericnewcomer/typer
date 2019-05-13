@@ -8,16 +8,22 @@
 
 .character {
   display: inline-block;
-  padding: 0px 2px;
-  font-size: 36px;
-  font-weight: 100;
+  padding: 5px 3px;
+  font-size: 40px;
   border-bottom: 1px solid transparent;
   height: 50px;
   vertical-align: top;
+  font-weight: 100;
+
+  // color: rgba(255, 255, 255, 0.9);
+  color: #666;
+
+  font-weight: 100;
+  // text-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
 }
 
 .space {
-  width: 15px;
+  width: 10px;
 }
 
 .space.cursor {
@@ -48,6 +54,7 @@
 
 .ngram {
   color: orange;
-  font-weight: 200;
+
+  // font-weight: 200;
   // text-shadow: 1px 1px 0px #bbb;
 }

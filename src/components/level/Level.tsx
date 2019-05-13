@@ -1,8 +1,14 @@
 import Digits from 'components/digits/Digits';
-import { addNGramScores, getNGramsForLevel, getPercentComplete, getSeverityColor } from 'components/level/helpers';
+import GramProgress from 'components/level/GramProgess';
+import {
+  addNGramScores as addGramScores,
+  getAllNGrams as getAllGrams,
+  getIncompleteGrams,
+  getPercentComplete
+} from 'components/level/helpers';
 import { TypeBox } from 'components/typebox/TypeBox';
 import { Config, MAX_SPRINT_LENGTH } from 'config';
-import { addResultToScores, getWPM, wordsLength, wordsToString } from 'helpers';
+import { addResultToScores, wordsLength, wordsToString } from 'helpers';
 import { Result, Scores, Word } from 'interfaces';
 import * as React from 'react';
 import Words from 'Words';
@@ -21,7 +27,8 @@ interface LevelState {
   currentSprint: string;
   currentWords: Word[];
   currentLevel: number;
-  ngrams: string[];
+  grams: string[];
+  completedGrams: string[];
   lessonWPM: number;
   wpm: number;
   lastKey: string;
@@ -34,30 +41,21 @@ export default class Level extends React.Component<LevelProps, LevelState> {
     const currentLevel =
       JSON.parse(localStorage.getItem("level") || "{}").currentLevel || 0;
 
-    const ngrams = getNGramsForLevel(this.props.words, currentLevel);
-    const currentWords = this.props.words.getWordsForNGrams(
-      ngrams,
-      Math.min(this.props.config.sprintLength, MAX_SPRINT_LENGTH),
-      this.props.config.ngramComponent
-    );
-
-    addNGramScores(
-      this.props.config.targetWPM,
-      this.props.config.targetAccuracy,
-      currentWords,
-      this.props.scores
-    );
-
     this.state = {
       lastKey: "",
       wpm: 0,
       lessonWPM: 0,
       mistakes: [],
-      currentWords,
-      currentSprint: wordsToString(currentWords),
+      grams: [],
+      completedGrams: getAllGrams(this.props.words, currentLevel),
       currentLevel,
-      ngrams
+      currentWords: [],
+      currentSprint: ""
     };
+  }
+
+  public componentDidMount() {
+    this.updateNextSprint();
   }
 
   public render(): JSX.Element {
@@ -79,55 +77,33 @@ export default class Level extends React.Component<LevelProps, LevelState> {
             onKeyPressed={this.handleKeyPressed}
           />
         </div>
+        <div className={styles.current_grams}>
+          {(this.state.grams || []).map((gram: string) => {
+            const record = this.props.scores[gram];
+            return (
+              <GramProgress
+                key={gram + "_current_progress"}
+                gram={gram}
+                record={record}
+                config={this.props.config}
+                size={2}
+              />
+            );
+          })}
+        </div>
 
         <div className={styles.progress}>
-          {this.state.ngrams.map((ngram: string) => {
-            const result = this.props.scores[ngram];
-
-            const pct = result
-              ? getPercentComplete(
-                  this.props.config.targetWPM,
-                  this.props.config.targetAccuracy,
-                  result
-                )
-              : 0;
+          {this.state.completedGrams.map((ngram: string) => {
+            const record = this.props.scores[ngram];
 
             return (
-              <div
-                key={ngram}
-                className={
-                  styles.level_item + " " + (pct === 100 ? styles.complete : "")
-                }
-                style={
-                  {
-                    // borderColor: getSeverityColor(
-                    // result ? result.accuracy + 0.05 : 1
-                    //)
-                  }
-                }
-              >
-                <div
-                  className={styles.progress_bar}
-                  style={{
-                    background: getSeverityColor(result ? pct : 0),
-                    height: pct + "%"
-                  }}
-                />
-                <div className={styles.ngram}>{ngram}</div>
-                {result ? (
-                  <div className={styles.wpm_wrapper}>
-                    <div
-                      className={styles.ngram_wpm}
-                      style={{
-                        color: "rgba(0,0,0,.4)",
-                        background: pct >= 100 ? "#fff" : "#fff" // getSeverityColor(result ? result.accuracy : 0)
-                      }}
-                    >
-                      {pct >= 100 ? "🔥" : <Digits count={getWPM(result)} />}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
+              <GramProgress
+                key={ngram + "_progress"}
+                gram={ngram}
+                record={record}
+                config={this.props.config}
+                size={1}
+              />
             );
           })}
         </div>
@@ -165,7 +141,7 @@ export default class Level extends React.Component<LevelProps, LevelState> {
     // check incomplete before update so we have one round after completion before moving on
     let incomplete = 0;
 
-    this.state.ngrams.forEach((ngram: string) => {
+    this.state.grams.forEach((ngram: string) => {
       const result = scores[ngram];
       if (result) {
         const pct = getPercentComplete(
@@ -176,6 +152,8 @@ export default class Level extends React.Component<LevelProps, LevelState> {
         if (pct < 100) {
           incomplete++;
         }
+      } else {
+        incomplete++;
       }
     });
 
@@ -206,16 +184,17 @@ export default class Level extends React.Component<LevelProps, LevelState> {
 
     let time = 0;
     let chars = 0;
-    for (const ngram of this.state.ngrams) {
+    for (const ngram of this.state.grams) {
       if (!!scores[ngram]) {
         time += scores[ngram].speed;
         chars += ngram.length;
       }
     }
 
+    this.props.onScoresUpdated(scores);
     const lessonWPM = Math.floor(((chars / time) * 1000 * 60) / 5);
 
-    let ngrams: string[] = [...this.state.ngrams];
+    let ngrams: string[] = [...this.state.grams];
 
     let currentLevel = this.state.currentLevel;
     if (incomplete === 0) {
@@ -224,13 +203,11 @@ export default class Level extends React.Component<LevelProps, LevelState> {
       return;
     }
 
-    this.props.onScoresUpdated(scores);
-
     if (mistakes.length > this.props.config.painLevel) {
       mistakes.splice(0, mistakes.length - this.props.config.painLevel);
     }
 
-    this.setState({ lessonWPM, ngrams, currentLevel, mistakes }, () => {
+    this.setState({ lessonWPM, grams: ngrams, currentLevel, mistakes }, () => {
       // see if they need to be punished
       if (this.props.config.painLevel > 0 && mistakes.length > 0) {
         const mistake = mistakes[0];
@@ -255,17 +232,32 @@ export default class Level extends React.Component<LevelProps, LevelState> {
   private handleLevelUp(): void {
     const currentLevel = this.state.currentLevel + 1;
     localStorage.setItem("level", JSON.stringify({ currentLevel }));
-    this.setState({ currentLevel, ngrams: [], lessonWPM: 0 }, () => {
-      this.updateNextSprint();
-    });
+    this.setState(
+      {
+        currentLevel,
+        grams: [],
+        wpm: 0,
+        completedGrams: getAllGrams(this.props.words, currentLevel)
+      },
+      () => {
+        this.updateNextSprint();
+      }
+    );
   }
 
   private handleLevelDown(): void {
     const currentLevel = Math.max(0, this.state.currentLevel - 1);
     localStorage.setItem("level", JSON.stringify({ currentLevel }));
-    this.setState({ currentLevel, ngrams: [] }, () => {
-      this.updateNextSprint();
-    });
+    this.setState(
+      {
+        currentLevel,
+        grams: [],
+        completedGrams: getAllGrams(this.props.words, currentLevel)
+      },
+      () => {
+        this.updateNextSprint();
+      }
+    );
   }
 
   private updateNextSprint(): void {
@@ -275,16 +267,18 @@ export default class Level extends React.Component<LevelProps, LevelState> {
       20 + decilesCompleted,
       this.props.config.sprintLength
     );
+
     // we let our sprints get longer as we go along
     sprintLength = Math.min(sprintLength, MAX_SPRINT_LENGTH);
 
     // the ngrams can also be a smaller percentage of the word
-    const ngramComp = Math.max(
+    const ngramComp = this.props.config
+      .ngramComponent; /* Math.max(
       0.2,
       this.props.config.ngramComponent - decilesCompleted * 0.05
-    );
+    );*/
 
-    let incompleteGrams = this.state.ngrams.filter((ngram: string) => {
+    let incompleteGrams = this.state.grams.filter((ngram: string) => {
       const result = this.props.scores[ngram];
       return (
         result &&
@@ -296,13 +290,13 @@ export default class Level extends React.Component<LevelProps, LevelState> {
       );
     });
 
-    let ngrams = this.state.ngrams;
     if (incompleteGrams.length === 0) {
-      incompleteGrams = getNGramsForLevel(
+      incompleteGrams = getIncompleteGrams(
         this.props.words,
-        this.state.currentLevel
+        this.state.currentLevel,
+        this.props.scores,
+        this.props.config
       );
-      ngrams = incompleteGrams;
     }
 
     const currentWords = this.props.words.getWordsForNGrams(
@@ -311,7 +305,7 @@ export default class Level extends React.Component<LevelProps, LevelState> {
       ngramComp
     );
 
-    addNGramScores(
+    addGramScores(
       this.props.config.targetWPM,
       this.props.config.targetAccuracy,
       currentWords,
@@ -320,7 +314,7 @@ export default class Level extends React.Component<LevelProps, LevelState> {
 
     const currentSprint = wordsToString(currentWords);
     this.setState({
-      ngrams,
+      grams: incompleteGrams,
       currentWords,
       currentSprint
     });
