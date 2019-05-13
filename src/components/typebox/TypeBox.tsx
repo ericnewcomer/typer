@@ -97,7 +97,7 @@ export class TypeBox extends React.Component<TypeBoxProps, TypeBoxState> {
     return (
       <div
         tabIndex={0}
-        onKeyPress={this.onKeyDown}
+        onKeyDown={this.onKeyDown}
         className="typebox"
         ref={(ele: HTMLDivElement) => {
           this.ele = ele;
