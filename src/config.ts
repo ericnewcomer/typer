@@ -1,6 +1,6 @@
 const TARGET_WPM = 85;
 const TARGET_ACCURACY = 95;
-const ROLLING_AVERAGE = 20;
+const ROLLING_AVERAGE = 50;
 const HIGH_FREQ_BIAS = 0.75; // % chance of getting a high frequency gram
 const IDLE_THRESHOLD = 5000; // millis of idle to ignore results
 const NGRAM_COMPONENT = 0.5; // ngram should be at least this % of a word
